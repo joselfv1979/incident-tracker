@@ -1,0 +1,29 @@
+# ── Dependencies ──────────────────────────────
+node_modules/
+
+# ── Build output ──────────────────────────────
+dist/
+dist-ssr/
+*.local
+
+# ── Tests ─────────────────────────────────────
+coverage/
+test-results/
+playwright-report/
+playwright/.cache/
+
+# ── Package manager logs ──────────────────────
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ── TypeScript / tooling cache ────────────────
+*.tsbuildinfo
+.eslintcache
+.vite/
+
+# ── Editors ───────────────────────────────────
+.idea/
+.vscode/*
+!.vscode/extensions.json

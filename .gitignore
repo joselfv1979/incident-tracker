@@ -1,0 +1,24 @@
+# ── Operating system ──────────────────────────
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ── IDEs and editors ──────────────────────────
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.iml
+*.swp
+*.swo
+
+# ── Environment and secrets ───────────────────
+.env
+.env.*
+!.env.example
+
+# ── Logs ──────────────────────────────────────
+*.log
+logs/
+
+# ── Docker local data ─────────────────────────
+postgres-data/

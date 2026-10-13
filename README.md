@@ -10,8 +10,7 @@ Incident Tracker centralizes incident management in a single place: any user can
 
 - **Incident registration** with title, description, priority, category and attachments.
 - **Assignment** to an owner (and reassignment).
-- **Status workflow**: `OPEN → IN_PROGRESS → RESOLVED → CLOSED` (with the ability to reopen).
-- **Priority levels**: `LOW`, `MEDIUM`, `HIGH`, `CRITICAL`.
+- **Status workflow**: `OPEN → IN_PROGRESS → IN_REVIEW → RESOLVED → CLOSED` (with the ability to reopen).
 - **Comments** to keep a record of progress.
 - **Change history** (audit trail for status, assignee and priority changes).
 - **Search and filters** by status, priority, assignee, dates and free text.
@@ -219,3 +218,7 @@ cd frontend && npm run test
 - **Branches**: `main` (stable), `develop`, `feature/<description>`, `fix/<description>`
 - **Commits**: [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`)
 - **PRs**: one issue per PR, with tests and green CI
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
