@@ -1,0 +1,6 @@
+# Quarantine: don't install versions published less than 7 days ago
+minimumReleaseAge: 10080
+
+# Dependency build scripts: blocked unless listed here
+allowBuilds:
+  esbuild: true
