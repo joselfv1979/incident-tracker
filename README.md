@@ -23,8 +23,8 @@ Incident Tracker centralizes incident management in a single place: any user can
 | -------- | ------------------------------------------------------------------------------------------- |
 | Backend  | Java 21, Spring Boot 3, Spring Web, Spring Data JPA, Spring Security (JWT), Bean Validation |
 | Database | PostgreSQL 16, Flyway (migrations)                                                          |
-| Frontend | Vue 3 (Composition API), TypeScript, Vite, Pinia, Vue Router                                |
-| Quality  | JUnit 5, Mockito, Testcontainers · Vitest, Vue Test Utils, Playwright                       |
+| Frontend | Vue 3 (Composition API), TypeScript, Vite, Pinia, Vue Router, pnpm                                |
+| Quality  | JUnit 5, Mockito, Testcontainers · Vitest, Vue Test Utils, ESLint, Oxlint, Prettier · Playwright                   |
 | API docs | springdoc-openapi (Swagger UI)                                                              |
 | DevOps   | Docker, Docker Compose, GitHub Actions                                                      |
 
@@ -92,7 +92,8 @@ IncidentHistory(id, incident_id, actor_id, field, old_value, new_value, created_
 ### Requirements
 
 - Java 21+
-- Node.js 20+
+- Node.js 20.19+
+- pnpm
 - Docker and Docker Compose
 
 ### With Docker Compose
@@ -117,8 +118,8 @@ cd backend
 
 # 3. Frontend
 cd frontend
-npm install
-npm run dev
+npnpm install
+pnpm dev
 ```
 
 ### Environment variables
@@ -134,7 +135,7 @@ npm run dev
 
 ```bash
 cd backend && ./mvnw test
-cd frontend && npm run test
+cd frontend && pnpm run test
 ```
 
 ---
@@ -145,9 +146,9 @@ cd frontend && npm run test
 
 ### Phase 0 · Repository foundations
 
-- [ ] Create the monorepo structure (`backend/`, `frontend/`, `docs/`)
+- [x] Create the monorepo structure (`backend/`, `frontend/`, `docs/`)
 - [ ] Initialize the Spring Boot project (Web, JPA, Security, Validation, Flyway, PostgreSQL, Lombok)
-- [ ] Initialize the Vue 3 + TS project with Vite, Pinia, Vue Router, ESLint and Prettier
+- [x] Initialize the Vue 3 + TS project with Vite, Pinia, Vue Router, ESLint and Prettier
 - [ ] `docker-compose.yml` with PostgreSQL
 - [ ] `.gitignore`, `.editorconfig`, license
 - [ ] Basic CI with GitHub Actions (build + tests for both modules)
