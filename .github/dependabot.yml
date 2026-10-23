@@ -1,0 +1,59 @@
+version: 2
+
+updates:
+  # Backend: Maven dependencies (Spring Boot, plugins, drivers...)
+  - package-ecosystem: "maven"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    # Same idea as pnpm's minimumReleaseAge: wait before proposing new releases
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      maven-minor-patch:
+        update-types: ["minor", "patch"]
+
+  # Frontend: pnpm projects use the "npm" ecosystem value
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      npm-minor-patch:
+        update-types: ["minor", "patch"]
+
+  # GitHub Actions used in .github/workflows
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: "ci(deps)"
+
+  # PostgreSQL image in docker-compose.yml
+  - package-ecosystem: "docker-compose"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: "chore(deps)"
+    ignore:
+      # A PostgreSQL major upgrade needs a data migration, so do it by hand
+      - dependency-name: "postgres"
+        update-types: ["version-update:semver-major"]
