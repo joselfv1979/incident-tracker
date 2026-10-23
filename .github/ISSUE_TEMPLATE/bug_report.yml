@@ -1,0 +1,57 @@
+name: Bug report
+description: Report something that is not working as expected
+title: "fix: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug.
+        Please do not include passwords, tokens or any other secrets.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Backend (API)
+        - Frontend (UI)
+        - Database
+        - CI / tooling
+        - Documentation
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: A clear description of the problem.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Go to ...
+        2. Click on ...
+        3. See the error
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots
+      description: Relevant error messages or screenshots (remove any secrets first).
+      render: shell
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, browser, Java and Node versions, if relevant.
+      placeholder: "Ubuntu 24.04 (WSL), Java 21, Node 24, Chrome"
