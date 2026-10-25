@@ -41,4 +41,7 @@ public class User {
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
+
+    @Column(name = "email_verified", nullable = false)
+    private boolean emailVerified;
 }

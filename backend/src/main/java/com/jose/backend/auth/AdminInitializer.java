@@ -51,6 +51,7 @@ public class AdminInitializer implements ApplicationRunner {
         admin.setEmail(normalizedEmail);
         admin.setPasswordHash(passwordEncoder.encode(password));
         admin.setRole(Role.ADMIN);
+        admin.setEmailVerified(true);
         users.save(admin);
         log.info("Initial administrator created: {}", normalizedEmail);
     }

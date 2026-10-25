@@ -38,6 +38,7 @@ class AuthControllerTest {
         user.setEmail(EMAIL);
         user.setPasswordHash(passwordEncoder.encode(PASSWORD));
         user.setRole(Role.USER);
+        user.setEmailVerified(true);
         users.save(user);
     }
 
@@ -105,5 +106,20 @@ class AuthControllerTest {
         mockMvc.perform(get("/api/auth/me")).andExpect(status().isUnauthorized());
         mockMvc.perform(get("/api/auth/me").header("Authorization", "Bearer not-a-token"))
                 .andExpect(status().isUnauthorized());
+    }
+
+        @Test
+    void loginFailsForUnverifiedAccount() throws Exception {
+        User unverified = new User();
+        unverified.setName("Unverified");
+        unverified.setEmail("unverified@example.com");
+        unverified.setPasswordHash(passwordEncoder.encode(PASSWORD));
+        unverified.setRole(Role.USER);
+        users.save(unverified);
+
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body("unverified@example.com", PASSWORD)))
+                .andExpect(status().isForbidden());
     }
 }
