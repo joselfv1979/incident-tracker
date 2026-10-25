@@ -128,7 +128,8 @@ pnpm dev
 | ------------------------- | ---------------------------- | -------------------------------------------- |
 | `DB_URL`                  | PostgreSQL JDBC URL          | `jdbc:postgresql://localhost:5432/incidents` |
 | `DB_USER` / `DB_PASSWORD` | Database credentials         | `incidents` / `incidents`                    |
-| `JWT_SECRET`              | Token signing key            | _(long random string)_                       |
+| `JWT_SECRET`              | Token signing key            | _(long random string)_   
+| `ADMIN_EMAIL` / `ADMIN_PASSWORD` | Admin credentials     | `admin@example.com` /`admin-password`            |
 | `VITE_API_URL`            | API URL used by the frontend | `http://localhost:8080/api`                  |
 
 ## Tests
