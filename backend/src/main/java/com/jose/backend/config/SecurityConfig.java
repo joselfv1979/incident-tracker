@@ -1,6 +1,9 @@
 package com.jose.backend.config;
 
 import com.jose.backend.auth.AdminProperties;
+import com.jose.backend.auth.AppMailProperties;
+import com.jose.backend.auth.VerificationProperties;
+
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,7 +18,9 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableMethodSecurity
-@EnableConfigurationProperties({JwtProperties.class, AdminProperties.class})
+@EnableConfigurationProperties({
+    JwtProperties.class, AdminProperties.class, VerificationProperties.class, AppMailProperties.class
+})
 public class SecurityConfig {
 
     @Bean
@@ -26,8 +31,13 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/health", "/api/auth/login").permitAll()
-                        .anyRequest().authenticated())
+                        .requestMatchers(
+        "/api/health",
+        "/api/auth/login",
+        "/api/auth/register",
+        "/api/auth/verify-email",
+        "/api/auth/resend-verification").permitAll()
+                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter)));
         return http.build();
