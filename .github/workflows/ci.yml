@@ -42,6 +42,7 @@ jobs:
       DB_URL: jdbc:postgresql://localhost:5432/incidents
       DB_USER: incidents
       DB_PASSWORD: ci-password
+      JWT_SECRET: ci-only-secret-not-for-production-0123456789abcdef
     steps:
       - uses: actions/checkout@v7
 
