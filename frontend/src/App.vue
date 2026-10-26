@@ -1,25 +1,33 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import { getHealth, type HealthResponse } from '@/api/health'
+import { watch } from 'vue'
+import { RouterView, useRoute, useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 
-const health = ref<HealthResponse | null>(null)
-const error = ref<string | null>(null)
+const auth = useAuthStore()
+const route = useRoute()
+const router = useRouter()
 
-onMounted(async () => {
-  try {
-    health.value = await getHealth()
-  } catch (e) {
-    error.value = e instanceof Error ? e.message : 'Unknown error'
-  }
-})
+// The session ended (logout, expired token or rejected by the API) on a protected page
+watch(
+  () => auth.isAuthenticated,
+  (authenticated) => {
+    if (!authenticated && route.meta.requiresAuth) {
+      router.replace({
+        name: 'login',
+        query: route.fullPath === '/' ? undefined : { redirect: route.fullPath },
+      })
+    }
+  },
+)
 </script>
 
 <template>
-  <main>
-    <h1>Incident Tracker</h1>
-    <p v-if="health">API: {{ health.status }} · Database: {{ health.database }}</p>
-    <p v-else-if="error">API unavailable ({{ error }})</p>
-    <p v-else>Checking API…</p>
-    <RouterView />
-  </main>
+  <header class="app-header">
+    <strong>Incident Tracker</strong>
+    <div v-if="auth.isAuthenticated">
+      <span v-if="auth.user">{{ auth.user.name }}</span>
+      <button type="button" @click="auth.logout()">Log out</button>
+    </div>
+  </header>
+  <RouterView />
 </template>

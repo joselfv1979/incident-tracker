@@ -1,13 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
-import App from '../App.vue'
+import HealthStatus from '@/components/HealthStatus.vue'
 import { getHealth } from '@/api/health'
 
 vi.mock('@/api/health')
 
-const mountApp = () => mount(App, { global: { stubs: { RouterView: true } } })
-
-describe('App', () => {
+describe('HealthStatus', () => {
   beforeEach(() => {
     vi.resetAllMocks()
   })
@@ -15,7 +13,7 @@ describe('App', () => {
   it('shows the API and database status', async () => {
     vi.mocked(getHealth).mockResolvedValue({ status: 'UP', database: 'UP' })
 
-    const wrapper = mountApp()
+    const wrapper = mount(HealthStatus)
     expect(wrapper.text()).toContain('Checking API')
 
     await flushPromises()
@@ -25,7 +23,7 @@ describe('App', () => {
   it('shows an error when the API is unavailable', async () => {
     vi.mocked(getHealth).mockRejectedValue(new Error('HTTP 503'))
 
-    const wrapper = mountApp()
+    const wrapper = mount(HealthStatus)
     await flushPromises()
 
     expect(wrapper.text()).toContain('API unavailable (HTTP 503)')
