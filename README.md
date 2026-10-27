@@ -86,6 +86,9 @@ IncidentHistory(id, incident_id, actor_id, field, old_value, new_value, created_
 | GET      | `/api/incidents/{id}/history`  | Change history                          |
 | GET      | `/api/stats/summary`           | Totals by status, priority and assignee |
 | GET      | `/api/stats/resolution-time`   | Mean time to resolution                 |
+| GET      | `/api/users`                   | Get users                               |
+| GET      | `/api/users/assignable`        | Get users' roles                        |
+| PATCH    | `/api/users/{id}/role`         | Change user's role                      |
 
 ## Getting started
 
