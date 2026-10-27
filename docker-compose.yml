@@ -18,7 +18,7 @@ services:
       retries: 10
 
   mailpit:
-    image: axllent/mailpit:v1.30.5
+    image: axllent/mailpit:v1.31.6
     container_name: incidents-mailpit
     restart: unless-stopped
     ports:
