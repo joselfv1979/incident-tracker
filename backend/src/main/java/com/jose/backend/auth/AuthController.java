@@ -9,14 +9,25 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.jose.backend.user.User;
+import com.jose.backend.user.UserService;
+
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
     private final AuthService authService;
+    private final UserService userService;
 
-    public AuthController(AuthService authService) {
+    public AuthController(AuthService authService, UserService userService) {
         this.authService = authService;
+        this.userService = userService;
+    }
+
+    @GetMapping("/me")
+    public MeResponse me(@AuthenticationPrincipal Jwt jwt) {
+        User user = userService.getById(Long.valueOf(jwt.getSubject()));
+        return new MeResponse(user.getId(), user.getName(), user.getEmail(), user.getRole().name());
     }
 
     @PostMapping("/login")
@@ -24,12 +35,4 @@ public class AuthController {
         return authService.login(request);
     }
 
-    @GetMapping("/me")
-    public MeResponse me(@AuthenticationPrincipal Jwt jwt) {
-        return new MeResponse(
-                Long.valueOf(jwt.getSubject()),
-                jwt.getClaimAsString("name"),
-                jwt.getClaimAsString("email"),
-                jwt.getClaimAsString("role"));
-    }
 }
