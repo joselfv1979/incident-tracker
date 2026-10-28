@@ -43,3 +43,118 @@ button {
 .success {
   color: #1b5e20;
 }
+
+.page-wide {
+  max-width: 64rem;
+}
+
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.button {
+  padding: 0.5rem 1rem;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  text-decoration: none;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: flex-end;
+  margin-bottom: 1.5rem;
+}
+
+.filters .field {
+  margin-bottom: 0;
+}
+
+.field select,
+.field textarea {
+  padding: 0.5rem;
+  font: inherit;
+}
+
+.field.actions {
+  flex-direction: row;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 0.5rem;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  margin-right: 0.25rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  background: #eee;
+}
+
+.status-open { background: #e3f2fd; }
+.status-in_progress { background: #fff8e1; }
+.status-in_review { background: #f3e5f5; }
+.status-resolved { background: #e8f5e9; }
+.status-closed { background: #eceff1; }
+.priority-high { background: #ffe0b2; }
+.priority-critical { background: #ffcdd2; }
+
+.details {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.25rem 1rem;
+}
+
+.details dt {
+  font-weight: 600;
+}
+
+.details dd {
+  margin: 0;
+}
+
+.description {
+  white-space: pre-wrap;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.muted {
+  color: #666;
+}
+
+.app-footer {
+  padding: 1rem 1.5rem;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
