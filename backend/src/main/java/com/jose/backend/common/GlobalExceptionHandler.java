@@ -3,6 +3,8 @@ package com.jose.backend.common;
 import com.jose.backend.auth.EmailNotVerifiedException;
 import com.jose.backend.auth.InvalidCredentialsException;
 import com.jose.backend.auth.InvalidVerificationTokenException;
+import com.jose.backend.incident.IncidentNotFoundException;
+import com.jose.backend.incident.InvalidStatusTransitionException;
 import com.jose.backend.user.OperationNotAllowedException;
 import com.jose.backend.user.UserNotFoundException;
 
@@ -37,5 +39,15 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(OperationNotAllowedException.class)
     ProblemDetail handleNotAllowed(OperationNotAllowedException e) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, e.getMessage());
+    }
+
+    @ExceptionHandler(IncidentNotFoundException.class)
+    ProblemDetail handleIncidentNotFound(IncidentNotFoundException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, e.getMessage());
+    }
+
+    @ExceptionHandler(InvalidStatusTransitionException.class)
+    ProblemDetail handleInvalidTransition(InvalidStatusTransitionException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, e.getMessage());
     }
 }
