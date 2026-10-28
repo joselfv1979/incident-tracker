@@ -181,8 +181,8 @@ cd frontend && pnpm run test
 - [x] Status change with valid transition rules
 - [x] Assignment and reassignment of owner
 - [x] Global error handling (`@ControllerAdvice`)
-- [ ] Frontend: list, filters, create/edit form
-- [ ] Frontend: detail view with status change and assignment
+- [x] Frontend: list, filters, create/edit form
+- [x] Frontend: detail view with status change and assignment
 
 ### Phase 4 · Comments and history
 

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { watch } from 'vue'
-import { RouterView, useRoute, useRouter } from 'vue-router'
+import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
+import HealthStatus from '@/components/HealthStatus.vue'
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
@@ -23,11 +24,14 @@ watch(
 
 <template>
   <header class="app-header">
-    <strong>Incident Tracker</strong>
+    <RouterLink :to="{ name: 'home' }"><strong>Incident Tracker</strong></RouterLink>
     <div v-if="auth.isAuthenticated">
-      <span v-if="auth.user">{{ auth.user.name }}</span>
+      <span v-if="auth.user">{{ auth.user.name }} ({{ auth.user.role }})</span>
       <button type="button" @click="auth.logout()">Log out</button>
     </div>
   </header>
   <RouterView />
+  <footer class="app-footer">
+    <HealthStatus />
+  </footer>
 </template>

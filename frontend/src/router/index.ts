@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import type { Role } from '@/api/auth'
 import { useAuthStore } from '@/stores/auth'
-import HomeView from '@/views/HomeView.vue'
 
 declare module 'vue-router' {
   interface RouteMeta {
@@ -14,7 +13,31 @@ declare module 'vue-router' {
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    { path: '/', name: 'home', component: HomeView, meta: { requiresAuth: true } },
+    { path: '/', name: 'home', redirect: { name: 'incidents' } },
+    {
+      path: '/incidents',
+      name: 'incidents',
+      component: () => import('@/views/IncidentListView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/incidents/new',
+      name: 'incident-new',
+      component: () => import('@/views/IncidentFormView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/incidents/:id(\\d+)',
+      name: 'incident-detail',
+      component: () => import('@/views/IncidentDetailView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/incidents/:id(\\d+)/edit',
+      name: 'incident-edit',
+      component: () => import('@/views/IncidentFormView.vue'),
+      meta: { requiresAuth: true },
+    },
     {
       path: '/login',
       name: 'login',
@@ -32,7 +55,7 @@ const router = createRouter({
       name: 'verify-email',
       component: () => import('@/views/VerifyEmailView.vue'),
     },
-    { path: '/:pathMatch(.*)*', redirect: '/' },
+    { path: '/:pathMatch(.*)*', redirect: { name: 'home' } },
   ],
 })
 
