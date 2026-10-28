@@ -151,36 +151,36 @@ cd frontend && pnpm run test
 ### Phase 0 · Repository foundations
 
 - [x] Create the monorepo structure (`backend/`, `frontend/`, `docs/`)
-- [ ] Initialize the Spring Boot project (Web, JPA, Security, Validation, Flyway, PostgreSQL, Lombok)
+- [x] Initialize the Spring Boot project (Web, JPA, Security, Validation, Flyway, PostgreSQL, Lombok)
 - [x] Initialize the Vue 3 + TS project with Vite, Pinia, Vue Router, ESLint and Prettier
-- [ ] `docker-compose.yml` with PostgreSQL
-- [ ] `.gitignore`, `.editorconfig`, license
-- [ ] Basic CI with GitHub Actions (build + tests for both modules)
-- [ ] Issue and pull request templates
+- [x] `docker-compose.yml` with PostgreSQL
+- [x] `.gitignore`, `.editorconfig`, license
+- [x] Basic CI with GitHub Actions (build + tests for both modules)
+- [x] Issue and pull request templates
 
 ### Phase 1 · Database and domain
 
-- [ ] Design the data model and ER diagram in `docs/`
-- [ ] Flyway migration `V1__init.sql` (users, incidents, comments, incident_history)
-- [ ] JPA entities and repositories
-- [ ] Enums for status, priority and role
-- [ ] Seed data for development
+- [x] Design the data model and ER diagram in `docs/`
+- [x] Flyway migration `V1__init.sql` (users, incidents, comments, incident_history)
+- [x] JPA entities and repositories
+- [x] Enums for status, priority and role
+- [x] Seed data for development
 
 ### Phase 2 · Authentication and users
 
-- [ ] Registration and login with JWT
-- [ ] Spring Security configuration and roles
-- [ ] Users endpoint (list for assignment)
-- [ ] Login view and route guards in the frontend
-- [ ] HTTP interceptor with token and expired-session handling
+- [x] Registration and login with JWT
+- [x] Spring Security configuration and roles
+- [x] Users endpoint (list for assignment)
+- [x] Login view and route guards in the frontend
+- [x] HTTP interceptor with token and expired-session handling
 
 ### Phase 3 · Incident management (MVP)
 
-- [ ] Incident CRUD with DTOs and validation
-- [ ] Paginated list with filtering and sorting
-- [ ] Status change with valid transition rules
-- [ ] Assignment and reassignment of owner
-- [ ] Global error handling (`@ControllerAdvice`)
+- [x] Incident CRUD with DTOs and validation
+- [x] Paginated list with filtering and sorting
+- [x] Status change with valid transition rules
+- [x] Assignment and reassignment of owner
+- [x] Global error handling (`@ControllerAdvice`)
 - [ ] Frontend: list, filters, create/edit form
 - [ ] Frontend: detail view with status change and assignment
 
