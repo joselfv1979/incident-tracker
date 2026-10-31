@@ -7,7 +7,9 @@ import com.jose.backend.user.Role;
 import com.jose.backend.user.User;
 import com.jose.backend.user.UserRepository;
 import java.time.Instant;
+import java.util.Objects;
 import java.util.Set;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -26,10 +28,13 @@ public class IncidentService {
 
     private final IncidentRepository incidents;
     private final UserRepository users;
+    private final ApplicationEventPublisher events;
 
-    public IncidentService(IncidentRepository incidents, UserRepository users) {
+    public IncidentService(
+            IncidentRepository incidents, UserRepository users, ApplicationEventPublisher events) {
         this.incidents = incidents;
         this.users = users;
+        this.events = events;
     }
 
     @Transactional
@@ -39,11 +44,19 @@ public class IncidentService {
         incident.setDescription(request.description().trim());
         incident.setCategory(normalizeCategory(request.category()));
         incident.setReporter(users.getReferenceById(actor.id()));
-        return IncidentResponse.from(incidents.save(incident));
+        Incident saved = incidents.save(incident);
+
+        publish(saved, actor, ChangedField.CREATED, null, null);
+        return IncidentResponse.from(saved);
     }
 
     public IncidentResponse get(Long id, CurrentUser actor) {
         return IncidentResponse.from(findVisible(id, actor));
+    }
+
+    /** Fails with "not found" when the incident does not exist or the user cannot see it. */
+    public void requireVisible(Long id, CurrentUser actor) {
+        findVisible(id, actor);
     }
 
     public PageResponse<IncidentResponse> search(
@@ -89,9 +102,28 @@ public class IncidentService {
             }
         }
 
-        incident.setTitle(request.title().trim());
-        incident.setDescription(request.description().trim());
-        incident.setCategory(normalizeCategory(request.category()));
+        String title = request.title().trim();
+        String description = request.description().trim();
+        String category = normalizeCategory(request.category());
+
+        publishIfChanged(incident, actor, ChangedField.TITLE, incident.getTitle(), title);
+        if (!Objects.equals(incident.getDescription(), description)) {
+            // The text can be long: only the fact that it changed is recorded
+            publish(incident, actor, ChangedField.DESCRIPTION, null, null);
+        }
+        publishIfChanged(incident, actor, ChangedField.CATEGORY, incident.getCategory(), category);
+        if (request.priority() != null) {
+            publishIfChanged(
+                    incident,
+                    actor,
+                    ChangedField.PRIORITY,
+                    incident.getPriority().name(),
+                    request.priority().name());
+        }
+
+        incident.setTitle(title);
+        incident.setDescription(description);
+        incident.setCategory(category);
         if (request.priority() != null) {
             incident.setPriority(request.priority());
         }
@@ -109,6 +141,8 @@ public class IncidentService {
         if (!current.canTransitionTo(next)) {
             throw new InvalidStatusTransitionException(current, next);
         }
+
+        publish(incident, actor, ChangedField.STATUS, current.name(), next.name());
 
         incident.setStatus(next);
         if (next == IncidentStatus.RESOLVED) {
@@ -130,6 +164,12 @@ public class IncidentService {
                     .orElseThrow(() -> new ResponseStatusException(
                             HttpStatus.BAD_REQUEST, "The assignee must be an agent or an administrator"));
         }
+
+        User previous = incident.getAssignee();
+        if (!Objects.equals(idOf(previous), idOf(assignee))) {
+            publish(incident, actor, ChangedField.ASSIGNEE, nameOf(previous), nameOf(assignee));
+        }
+
         incident.setAssignee(assignee);
         return IncidentResponse.from(incidents.saveAndFlush(incident));
     }
@@ -141,6 +181,26 @@ public class IncidentService {
             throw new IncidentNotFoundException();
         }
         return incident;
+    }
+
+    private void publishIfChanged(
+            Incident incident, CurrentUser actor, ChangedField field, String oldValue, String newValue) {
+        if (!Objects.equals(oldValue, newValue)) {
+            publish(incident, actor, field, oldValue, newValue);
+        }
+    }
+
+    private void publish(
+            Incident incident, CurrentUser actor, ChangedField field, String oldValue, String newValue) {
+        events.publishEvent(new IncidentChanged(incident, actor.id(), field, oldValue, newValue));
+    }
+
+    private static Long idOf(User user) {
+        return user == null ? null : user.getId();
+    }
+
+    private static String nameOf(User user) {
+        return user == null ? null : user.getName();
     }
 
     private static String normalizeCategory(String category) {

@@ -89,6 +89,7 @@ IncidentHistory(id, incident_id, actor_id, field, old_value, new_value, created_
 | GET      | `/api/users`                   | Get users                               |
 | GET      | `/api/users/assignable`        | Get users' roles                        |
 | PATCH    | `/api/users/{id}/role`         | Change user's role                      |
+| GET      | `/api/incidents/{id}/history`  | Get incident's history                  |
 
 ## Getting started
 
@@ -187,7 +188,7 @@ cd frontend && pnpm run test
 ### Phase 4 · Comments and history
 
 - [ ] Comment endpoints
-- [ ] Automatic history logging on status, priority or assignee changes
+- [x] Automatic history logging on status, priority or assignee changes
 - [ ] Frontend: comment thread and history timeline
 
 ### Phase 5 · Statistics
