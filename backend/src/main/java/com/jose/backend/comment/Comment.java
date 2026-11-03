@@ -42,4 +42,10 @@ public class Comment {
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
+
+    @Column(nullable = false)
+    private boolean internal;
+
+    @Column(name = "edited_at")
+    private Instant editedAt;
 }

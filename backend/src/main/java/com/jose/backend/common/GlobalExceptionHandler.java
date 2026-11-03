@@ -3,6 +3,7 @@ package com.jose.backend.common;
 import com.jose.backend.auth.EmailNotVerifiedException;
 import com.jose.backend.auth.InvalidCredentialsException;
 import com.jose.backend.auth.InvalidVerificationTokenException;
+import com.jose.backend.comment.CommentNotFoundException;
 import com.jose.backend.incident.IncidentNotFoundException;
 import com.jose.backend.incident.InvalidStatusTransitionException;
 import com.jose.backend.user.OperationNotAllowedException;
@@ -49,5 +50,10 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(InvalidStatusTransitionException.class)
     ProblemDetail handleInvalidTransition(InvalidStatusTransitionException e) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, e.getMessage());
+    }
+
+    @ExceptionHandler(CommentNotFoundException.class)
+    ProblemDetail handleCommentNotFound(CommentNotFoundException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, e.getMessage());
     }
 }
