@@ -82,7 +82,6 @@ IncidentHistory(id, incident_id, actor_id, field, old_value, new_value, created_
 | PUT      | `/api/incidents/{id}`          | Update                                  |
 | PATCH    | `/api/incidents/{id}/status`   | Change status                           |
 | PATCH    | `/api/incidents/{id}/assignee` | Assign an owner                         |
-| GET/POST | `/api/incidents/{id}/comments` | List / add comments                     |
 | GET      | `/api/incidents/{id}/history`  | Change history                          |
 | GET      | `/api/stats/summary`           | Totals by status, priority and assignee |
 | GET      | `/api/stats/resolution-time`   | Mean time to resolution                 |
@@ -90,6 +89,10 @@ IncidentHistory(id, incident_id, actor_id, field, old_value, new_value, created_
 | GET      | `/api/users/assignable`        | Get users' roles                        |
 | PATCH    | `/api/users/{id}/role`         | Change user's role                      |
 | GET      | `/api/incidents/{id}/history`  | Get incident's history                  |
+| GET      | `/api/incidents/{id}/comments` | List comments                           |
+| POST     | `/api/incidents/{id}/comments` | Add comments                            |
+| PUT      | `/api/incidents/{id}/comments` | Change comment                          |
+| DELETE   | `/api/incidents/{id}/comments` | Delete comment                          |
 
 ## Getting started
 
@@ -187,7 +190,7 @@ cd frontend && pnpm run test
 
 ### Phase 4 · Comments and history
 
-- [ ] Comment endpoints
+- [x] Comment endpoints
 - [x] Automatic history logging on status, priority or assignee changes
 - [ ] Frontend: comment thread and history timeline
 
