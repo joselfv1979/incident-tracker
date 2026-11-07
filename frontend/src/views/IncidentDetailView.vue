@@ -12,6 +12,7 @@ import { ApiError } from '@/api/http'
 import { getAssignableUsers, type UserSummary } from '@/api/users'
 import PriorityBadge from '@/components/PriorityBadge.vue'
 import StatusBadge from '@/components/StatusBadge.vue'
+import IncidentTimeline from '@/components/IncidentTimeline.vue'
 import { useAuthStore } from '@/stores/auth'
 import {
   STATUS_LABELS,
@@ -31,6 +32,7 @@ const loading = ref(true)
 const loadError = ref<string | null>(null)
 const actionError = ref<string | null>(null)
 const busy = ref(false)
+const timelineVersion = ref(0)
 
 const staff = computed(() => isStaff(auth.user))
 const transitions = computed(() =>
@@ -52,6 +54,7 @@ async function run(action: () => Promise<Incident>) {
   busy.value = true
   try {
     incident.value = await action()
+    timelineVersion.value += 1
   } catch (error) {
     actionError.value = messageFor(error)
   } finally {
@@ -164,6 +167,8 @@ onMounted(async () => {
       </section>
 
       <p v-if="actionError" class="error" role="alert">{{ actionError }}</p>
+
+      <IncidentTimeline :incident-id="incident.id" :version="timelineVersion" />
     </article>
   </main>
 </template>
