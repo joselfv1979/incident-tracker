@@ -46,7 +46,10 @@ async function mountDetail(role: 'USER' | 'AGENT') {
   await router.push('/incidents/1')
   await router.isReady()
 
-  const wrapper = mount(IncidentDetailView, { global: { plugins: [pinia, router] } })
+  const wrapper = mount(IncidentDetailView, {
+    global: { plugins: [pinia, router], stubs: { IncidentTimeline: true } },
+  })
+
   await flushPromises()
   return wrapper
 }
