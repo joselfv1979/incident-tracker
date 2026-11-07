@@ -93,6 +93,9 @@ IncidentHistory(id, incident_id, actor_id, field, old_value, new_value, created_
 | POST     | `/api/incidents/{id}/comments` | Add comments                            |
 | PUT      | `/api/incidents/{id}/comments` | Change comment                          |
 | DELETE   | `/api/incidents/{id}/comments` | Delete comment                          |
+| GET      | `/api/stats/summary          ` | Get incident stats' summary             |
+| GET      | `/api/stats/trend?days=14`     | Get last 14 days' incident stats        |
+| GET      | `/api/stats/resolution-time?days=90` | Get last 90 days' resoluted incident stats |
 
 ## Getting started
 
@@ -192,12 +195,12 @@ cd frontend && pnpm run test
 
 - [x] Comment endpoints
 - [x] Automatic history logging on status, priority or assignee changes
-- [ ] Frontend: comment thread and history timeline
+- [x] Frontend: comment thread and history timeline
 
 ### Phase 5 · Statistics
 
-- [ ] Aggregate queries (by status, priority, assignee, period)
-- [ ] Mean time to resolution calculation
+- [x] Aggregate queries (by status, priority, assignee, period)
+- [x] Mean time to resolution calculation
 - [ ] Frontend: dashboard with charts (Chart.js or ECharts)
 
 ### Phase 6 · Quality and documentation
