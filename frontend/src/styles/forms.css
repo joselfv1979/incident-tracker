@@ -237,3 +237,120 @@ td {
   align-items: center;
   gap: 0.5rem;
 }
+
+.main-nav {
+  display: flex;
+  gap: 1rem;
+}
+
+.stat-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin: 1rem 0 1.5rem;
+}
+
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 11rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+.stat-label,
+.stat-hint {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.stat-value {
+  font-size: 1.75rem;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  gap: 1.5rem;
+}
+
+.bar-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.bar-list li {
+  display: grid;
+  grid-template-columns: 7rem 1fr 4.5rem;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.bar-track {
+  height: 0.9rem;
+  background: #eee;
+  border-radius: 3px;
+}
+
+.bar-fill {
+  display: block;
+  height: 100%;
+  background: #1565c0;
+  border-radius: 3px;
+}
+
+.bar-value {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.trend-svg {
+  width: 100%;
+  height: auto;
+}
+
+.trend-grid {
+  stroke: #ddd;
+}
+
+.trend-tick {
+  font-size: 11px;
+  fill: #666;
+}
+
+.trend-created {
+  stroke: #1565c0;
+  stroke-width: 2;
+}
+
+.trend-resolved {
+  stroke: #2e7d32;
+  stroke-width: 2;
+  stroke-dasharray: 6 4;
+}
+
+.trend-legend {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.swatch {
+  display: inline-block;
+  width: 1.5rem;
+  height: 0;
+  vertical-align: middle;
+  border-top: 2px solid #1565c0;
+}
+
+.swatch-resolved {
+  border-top: 2px dashed #2e7d32;
+}
+
+.banner {
+  padding: 0.75rem 1.5rem;
+  background: #fff3cd;
+  border-bottom: 1px solid #e0c36a;
+}

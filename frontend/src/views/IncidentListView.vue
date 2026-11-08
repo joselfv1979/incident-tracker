@@ -138,7 +138,10 @@ watch(() => route.query, load, { immediate: true })
       </div>
     </form>
 
-    <p v-if="error" class="error" role="alert">{{ error }}</p>
+    <p v-if="error" class="error" role="alert">
+      {{ error }}
+      <button type="button" @click="load">Retry</button>
+    </p>
     <p v-else-if="loading && !result">Loading…</p>
     <p v-else-if="result && result.content.length === 0">No incidents found.</p>
 

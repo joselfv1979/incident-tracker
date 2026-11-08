@@ -2,6 +2,7 @@ import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 import * as authApi from '@/api/auth'
 import type { AuthUser } from '@/api/auth'
+import { ApiError } from '@/api/http'
 import { getTokenExpiry } from '@/utils/jwt'
 
 const STORAGE_KEY = 'auth.token'
@@ -22,6 +23,7 @@ function readStoredToken(): string | null {
 export const useAuthStore = defineStore('auth', () => {
   const token = ref<string | null>(readStoredToken())
   const user = ref<AuthUser | null>(null)
+  const loadFailed = ref(false)
   let expiryTimer: ReturnType<typeof setTimeout> | undefined
 
   const isAuthenticated = computed(() => token.value !== null)
@@ -45,6 +47,7 @@ export const useAuthStore = defineStore('auth', () => {
     clearTimeout(expiryTimer)
     token.value = null
     user.value = null
+    loadFailed.value = false
     sessionStorage.removeItem(STORAGE_KEY)
   }
 
@@ -64,12 +67,19 @@ export const useAuthStore = defineStore('auth', () => {
     if (!token.value || user.value) return
     try {
       user.value = await authApi.getMe()
-    } catch {
-      logout()
+      loadFailed.value = false
+    } catch (error) {
+      // Only a rejected token ends the session. If the server is unreachable or
+      // failing, the token may still be valid: keep it and let the user retry.
+      if (error instanceof ApiError && error.status === 401) {
+        logout()
+      } else {
+        loadFailed.value = true
+      }
     }
   }
 
   if (token.value) scheduleExpiry(token.value)
 
-  return { token, user, isAuthenticated, role, login, loadUser, logout }
+  return { token, user, isAuthenticated, role, loadFailed, login, loadUser, logout }
 })

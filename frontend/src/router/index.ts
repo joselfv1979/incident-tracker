@@ -55,6 +55,12 @@ const router = createRouter({
       name: 'verify-email',
       component: () => import('@/views/VerifyEmailView.vue'),
     },
+    {
+      path: '/stats',
+      name: 'stats',
+      component: () => import('@/views/StatsView.vue'),
+      meta: { requiresAuth: true, roles: ['AGENT', 'ADMIN'] },
+    },
     { path: '/:pathMatch(.*)*', redirect: { name: 'home' } },
   ],
 })
