@@ -92,4 +92,21 @@ describe('IncidentListView', () => {
       expect.objectContaining({ q: 'printer', status: 'OPEN', page: 0 }),
     )
   })
+
+  it('lets the user retry after an error', async () => {
+    vi.mocked(listIncidents)
+      .mockRejectedValueOnce(new Error('boom'))
+      .mockResolvedValueOnce(pageOf([incident]))
+    const { wrapper } = await mountList()
+    expect(wrapper.text()).toContain('Could not load the incidents')
+
+    await wrapper
+      .findAll('button')
+      .find((button) => button.text() === 'Retry')
+      ?.trigger('click')
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('Printer on fire')
+    expect(wrapper.text()).not.toContain('Could not load the incidents')
+  })
 })
