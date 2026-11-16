@@ -1,5 +1,7 @@
 package com.jose.backend.stats;
 
+import com.jose.backend.support.AbstractIntegrationTest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -28,7 +30,7 @@ import com.jose.backend.user.UserRepository;
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
-class StatsControllerTest {
+class StatsControllerTest extends AbstractIntegrationTest {
 
     private static final String PASSWORD = "secret-password";
 

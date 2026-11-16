@@ -1,5 +1,7 @@
 package com.jose.backend.auth;
 
+import com.jose.backend.support.AbstractIntegrationTest;
+
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -23,7 +25,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-class RegistrationFlowTest {
+class RegistrationFlowTest extends AbstractIntegrationTest {
 
     private static final String EMAIL = "new.user@example.com";
     private static final String PASSWORD = "secret-password";
