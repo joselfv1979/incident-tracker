@@ -1,5 +1,7 @@
 package com.jose.backend.incident;
 
+import com.jose.backend.support.AbstractIntegrationTest;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -24,7 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
-class IncidentControllerTest {
+class IncidentControllerTest extends AbstractIntegrationTest {
 
     private static final String PASSWORD = "secret-password";
 

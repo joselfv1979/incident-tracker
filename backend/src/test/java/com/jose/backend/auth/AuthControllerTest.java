@@ -1,5 +1,7 @@
 package com.jose.backend.auth;
 
+import com.jose.backend.support.AbstractIntegrationTest;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -22,7 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
-class AuthControllerTest {
+class AuthControllerTest extends AbstractIntegrationTest {
 
     private static final String EMAIL = "test.user@example.com";
     private static final String PASSWORD = "secret-password";
