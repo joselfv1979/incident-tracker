@@ -151,6 +151,26 @@ cd frontend && pnpm run test
 
 ---
 
+## End-to-end tests
+
+The `e2e/` folder holds Playwright tests that drive a real browser against the
+whole system. They use their own isolated environment (PostgreSQL on 5433,
+Mailpit on 8026, backend on 8081, frontend on 5174), so they do not touch the
+development data.
+
+```bash
+cd e2e
+pnpm install
+pnpm exec playwright install chromium
+pnpm services:up
+pnpm test
+pnpm services:down
+```
+
+Requires Docker, Java 21 and a `pnpm install` in `frontend/`.
+
+---
+
 ## 🗺️ Roadmap and task breakdown
 
 > Convention: each phase can be a GitHub **milestone** and each checkbox an **issue**.
@@ -201,14 +221,14 @@ cd frontend && pnpm run test
 
 - [x] Aggregate queries (by status, priority, assignee, period)
 - [x] Mean time to resolution calculation
-- [ ] Frontend: dashboard with charts (Chart.js or ECharts)
+- [x] Frontend: dashboard with charts (Chart.js or ECharts)
 
 ### Phase 6 · Quality and documentation
 
 - [ ] Unit tests for services and business rules
 - [ ] Integration tests with Testcontainers
 - [ ] Component and store tests (Vitest)
-- [ ] E2E tests for the main flows (Playwright)
+- [x] E2E tests for the main flows (Playwright)
 - [ ] Review OpenAPI documentation
 - [ ] Contribution guide (`CONTRIBUTING.md`)
 
