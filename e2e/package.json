@@ -1,0 +1,17 @@
+{
+  "name": "e2e",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@12.14.0",
+  "scripts": {
+    "services:up": "docker compose up -d --wait",
+    "services:down": "docker compose down -v",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.0",
+    "@types/node": "^24.19.2"
+  }
+}
