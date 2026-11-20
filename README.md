@@ -1,255 +1,154 @@
-# Incident Tracker
+# 🐞 Incident Tracker
+
+[![CI](https://github.com/joselfv1979/incident-tracker/actions/workflows/ci.yml/badge.svg)](https://github.com/joselfv1979/incident-tracker/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 A web application to **register, assign, track and resolve incidents** for a development or support team.
 
-## Overview
+Anyone can create an account (with email verification) and report a problem. Agents assign it, move it through a status workflow, discuss it in comments (including internal notes) and consult statistics. Every change is kept in a history.
 
-Incident Tracker centralizes incident management in a single place: any user can report a problem, the team assigns it to an owner, progress is tracked through comments and status changes, and once resolved the incident remains available for analysis through statistics.
+## Features
 
-### Key features
-
-- **Incident registration** with title, description, priority, category and attachments.
-- **Assignment** to an owner (and reassignment).
-- **Status workflow**: `OPEN → IN_PROGRESS → IN_REVIEW → RESOLVED → CLOSED` (with the ability to reopen).
-- **Comments** to keep a record of progress.
-- **Change history** (audit trail for status, assignee and priority changes).
-- **Search and filters** by status, priority, assignee, dates and free text.
-- **Statistics**: incidents by status, priority and assignee, mean time to resolution, trends over time.
-- **Authentication and roles**: `ADMIN`, `AGENT`, `USER`.
+- **Open registration with email verification**, and JWT authentication.
+- **Roles**: `USER` reports and follows their own incidents, `AGENT` works on all of them, `ADMIN` also manages roles.
+- **Incidents** with status workflow (`OPEN → IN_PROGRESS → IN_REVIEW → RESOLVED → CLOSED`, with reopening), priority, category and assignee.
+- **Search and filters** by text, status, priority, assignee and dates, with pagination. Filters live in the URL.
+- **Comments**, including **internal notes** visible only to staff, with editing and deletion.
+- **Change history**, shown with the comments in a single timeline.
+- **Statistics** for staff: totals, workload per assignee, created vs resolved per day and average resolution time.
+- **Interactive API documentation** (OpenAPI and Swagger UI).
 
 ## Tech stack
 
-| Layer    | Technology                                                                                  |
-| -------- | ------------------------------------------------------------------------------------------- |
-| Backend  | Java 21, Spring Boot 3, Spring Web, Spring Data JPA, Spring Security (JWT), Bean Validation |
-| Database | PostgreSQL 16, Flyway (migrations)                                                          |
-| Frontend | Vue 3 (Composition API), TypeScript, Vite, Pinia, Vue Router, pnpm                                |
-| Quality  | JUnit 5, Mockito, Testcontainers · Vitest, Vue Test Utils, ESLint, Oxlint, Prettier · Playwright                   |
-| API docs | springdoc-openapi (Swagger UI)                                                              |
-| DevOps   | Docker, Docker Compose, GitHub Actions                                                      |
+| Layer | Technology |
+|-------|-----------|
+| Backend | Java 21, Spring Boot 4, Spring Data JPA, Spring Security (JWT), Bean Validation, Spring Mail |
+| Database | PostgreSQL 16, Flyway migrations |
+| Frontend | Vue 3 (Composition API), TypeScript, Vite, Pinia, Vue Router, pnpm |
+| Tests | JUnit 5, Mockito, Testcontainers · Vitest, Vue Test Utils · Playwright |
+| Tooling | Docker Compose, GitHub Actions, Dependabot, ESLint, Oxlint, Prettier |
 
-## Repository structure
-
-```
-incident-tracker/
-├── backend/                  # Spring Boot REST API
-│   ├── src/main/java/com/example/incidents/
-│   │   ├── config/           # Security, CORS, OpenAPI
-│   │   ├── auth/             # Login, JWT, roles
-│   │   ├── user/
-│   │   ├── incident/         # Entity, repository, service, controller, DTOs
-│   │   ├── comment/
-│   │   ├── history/          # Change audit trail
-│   │   ├── stats/            # Statistics endpoints
-│   │   └── common/           # Exceptions, utilities, pagination
-│   ├── src/main/resources/
-│   │   └── db/migration/     # Flyway scripts (V1__init.sql, ...)
-│   └── pom.xml
-├── frontend/                 # Vue 3 + TypeScript SPA
-│   ├── src/
-│   │   ├── api/              # HTTP client and services
-│   │   ├── components/
-│   │   ├── views/            # Login, list, detail, statistics
-│   │   ├── stores/           # Pinia
-│   │   ├── router/
-│   │   ├── types/
-│   │   └── composables/
-│   └── package.json
-├── docs/                     # Architecture decisions, diagrams
-├── docker-compose.yml
-├── .github/workflows/        # CI
-└── README.md
-```
-
-## Data model (draft)
-
-```
-User(id, name, email, password_hash, role, created_at)
-Incident(id, title, description, status, priority, category,
-         reporter_id, assignee_id, created_at, updated_at, resolved_at)
-Comment(id, incident_id, author_id, body, created_at)
-IncidentHistory(id, incident_id, actor_id, field, old_value, new_value, created_at)
-```
-
-## REST API (draft)
-
-| Method   | Endpoint                       | Description                             |
-| -------- | ------------------------------ | --------------------------------------- |
-| POST     | `/api/auth/login`              | Authenticate, returns a JWT             |
-| GET      | `/api/incidents`               | Paginated list with filters             |
-| POST     | `/api/incidents`               | Create an incident                      |
-| GET      | `/api/incidents/{id}`          | Get details                             |
-| PUT      | `/api/incidents/{id}`          | Update                                  |
-| PATCH    | `/api/incidents/{id}/status`   | Change status                           |
-| PATCH    | `/api/incidents/{id}/assignee` | Assign an owner                         |
-| GET      | `/api/incidents/{id}/history`  | Change history                          |
-| GET      | `/api/stats/summary`           | Totals by status, priority and assignee |
-| GET      | `/api/stats/resolution-time`   | Mean time to resolution                 |
-| GET      | `/api/users`                   | Get users                               |
-| GET      | `/api/users/assignable`        | Get users' roles                        |
-| PATCH    | `/api/users/{id}/role`         | Change user's role                      |
-| GET      | `/api/incidents/{id}/history`  | Get incident's history                  |
-| GET      | `/api/incidents/{id}/comments` | List comments                           |
-| POST     | `/api/incidents/{id}/comments` | Add comments                            |
-| PUT      | `/api/incidents/{id}/comments` | Change comment                          |
-| DELETE   | `/api/incidents/{id}/comments` | Delete comment                          |
-| GET      | `/api/stats/summary          ` | Get incident stats' summary             |
-| GET      | `/api/stats/trend?days=14`     | Get last 14 days' incident stats        |
-| GET      | `/api/stats/resolution-time?days=90` | Get last 90 days' resoluted incident stats |
-
-## Getting started
+## Quick start
 
 ### Requirements
 
-- Java 21+
-- Node.js 20.19+
-- pnpm
-- Docker and Docker Compose
+- Java 21 or newer
+- Node.js 20.19 or newer and [pnpm](https://pnpm.io) (the version is pinned in `frontend/package.json`)
+- Docker or Podman
 
-### With Docker Compose
+### Run it
 
 ```bash
-docker compose up --build
+git clone https://github.com/joselfv1979/incident-tracker.git
+cd incident-tracker
+
+# 1. Configuration: edit .env and set at least JWT_SECRET (openssl rand -base64 48)
+cp .env.example .env
+
+# 2. PostgreSQL and a development mail server
+docker compose up -d db mailpit
+
+# 3. Backend, http://localhost:8080
+set -a; source .env; set +a
+cd backend && ./mvnw spring-boot:run
 ```
 
-- Frontend: http://localhost:5173
-- API: http://localhost:8080
-- Swagger UI: http://localhost:8080/swagger-ui.html
-
-### Local development
+In another terminal:
 
 ```bash
-# 1. Database
-docker compose up -d db
-
-# 2. Backend
-cd backend
-./mvnw spring-boot:run
-
-# 3. Frontend
+# 4. Frontend, http://localhost:5173
 cd frontend
-npnpm install
+pnpm install
 pnpm dev
 ```
 
-### Environment variables
+| What | Where |
+|------|-------|
+| Application | http://localhost:5173 |
+| API documentation | http://localhost:8080/swagger-ui.html |
+| Emails sent by the application (Mailpit) | http://localhost:8025 |
 
-| Variable                  | Description                  | Example                                      |
-| ------------------------- | ---------------------------- | -------------------------------------------- |
-| `DB_URL`                  | PostgreSQL JDBC URL          | `jdbc:postgresql://localhost:5432/incidents` |
-| `DB_USER` / `DB_PASSWORD` | Database credentials         | `incidents` / `incidents`                    |
-| `JWT_SECRET`              | Token signing key            | _(long random string)_   
-| `ADMIN_EMAIL` / `ADMIN_PASSWORD` | Admin credentials     | `admin@example.com` /`admin-password`            |
-| `VITE_API_URL`            | API URL used by the frontend | `http://localhost:8080/api`                  |
+Register an account in the application and open the verification link from Mailpit. The administrator defined by `ADMIN_EMAIL` and `ADMIN_PASSWORD` is created at startup; it can promote users to agents with `PATCH /api/users/{id}/role` (see the API documentation).
 
-## Tests
+The development servers proxy `/api` to the backend, so the browser only talks to one origin.
 
-```bash
-cd backend && ./mvnw test
-cd frontend && pnpm run test
+## Configuration
+
+The backend reads its configuration from environment variables. `.env.example` lists them with development values, and `.env` is ignored by Git.
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `DB_URL` | PostgreSQL JDBC URL | none |
+| `DB_USER`, `DB_PASSWORD` | Database credentials | none |
+| `DB_NAME` | Database name used by Docker Compose | `incidents` |
+| `JWT_SECRET` | Key that signs the tokens, at least 32 bytes | none |
+| `JWT_EXPIRATION` | Token lifetime | `1h` |
+| `ADMIN_EMAIL`, `ADMIN_PASSWORD` | Administrator created at startup if it does not exist | none |
+| `MAIL_HOST`, `MAIL_PORT` | SMTP server | `localhost`, `1025` |
+| `MAIL_FROM` | Sender of the emails | `no-reply@incident-tracker.local` |
+| `APP_BASE_URL` | Frontend URL used in the emailed links | `http://localhost:5173` |
+| `VERIFICATION_TOKEN_TTL` | Lifetime of a verification link | `24h` |
+| `VERIFICATION_RESEND_COOLDOWN` | Minimum time between verification emails | `60s` |
+| `API_DOCS_ENABLED` | Serve the OpenAPI specification and Swagger UI | `true` |
+| `SERVER_PORT` | Backend port | `8080` |
+
+The values in `.env.example` are for local development. **Any public deployment must use its own random `JWT_SECRET`, a strong administrator password and a real SMTP server.**
+
+## Project structure
+
+```
+incident-tracker/
+├── backend/        Spring Boot REST API (packages: auth, user, incident, comment, history, stats...)
+├── frontend/       Vue 3 single-page application
+├── e2e/            Playwright end-to-end tests, with their own isolated environment
+├── docs/           Project documentation
+├── .github/        CI workflow, issue forms, pull request template and Dependabot
+└── docker-compose.yml   PostgreSQL and Mailpit for development
 ```
 
----
+`docs/PROJECT_OVERVIEW.md` explains the purpose, the structure, the entities and relationships, the learning objectives and the roadmap in more detail.
 
-## End-to-end tests
+## API documentation
 
-The `e2e/` folder holds Playwright tests that drive a real browser against the
-whole system. They use their own isolated environment (PostgreSQL on 5433,
-Mailpit on 8026, backend on 8081, frontend on 5174), so they do not touch the
-development data.
+With the backend running, the interactive documentation is at http://localhost:8080/swagger-ui.html and the OpenAPI specification at http://localhost:8080/v3/api-docs.
+
+To try the protected endpoints, call `POST /api/auth/login`, copy the `accessToken`, click **Authorize** and paste it. Set `API_DOCS_ENABLED=false` to turn the documentation off.
+
+## Running the tests
 
 ```bash
-cd e2e
+# Backend: needs Docker or Podman. It starts its own PostgreSQL with Testcontainers,
+# so neither .env nor the development database are needed.
+cd backend && ./mvnw verify
+
+# Frontend
+cd frontend && pnpm lint && pnpm build && pnpm test:unit --run
+```
+
+### End-to-end tests
+
+The `e2e/` folder holds Playwright tests that drive a real browser against the whole system. They use their own isolated environment (PostgreSQL on 5433, Mailpit on 8026, backend on 8081 and frontend on 5174), so they do not touch the development data.
+
+```bash
+cd frontend && pnpm install        # once
+cd ../e2e
 pnpm install
 pnpm exec playwright install chromium
 pnpm services:up
 pnpm test
+pnpm report                        # HTML report
 pnpm services:down
 ```
 
-Requires Docker, Java 21 and a `pnpm install` in `frontend/`.
+## Status
 
----
+The functional product is complete: authentication and registration, incident management, history and comments, and statistics. The quality phase is under way (integration tests with Testcontainers, API documentation and end-to-end tests are done).
 
-## 🗺️ Roadmap and task breakdown
+Still to do before a public deployment: rate limiting, production configuration (SMTP, secrets, HTTPS), Dockerfiles and a user administration screen. The full roadmap is in [`docs/PROJECT_OVERVIEW.md`](docs/PROJECT_OVERVIEW.md).
 
-> Convention: each phase can be a GitHub **milestone** and each checkbox an **issue**.
+## Contributing
 
-### Phase 0 · Repository foundations
-
-- [x] Create the monorepo structure (`backend/`, `frontend/`, `docs/`)
-- [x] Initialize the Spring Boot project (Web, JPA, Security, Validation, Flyway, PostgreSQL, Lombok)
-- [x] Initialize the Vue 3 + TS project with Vite, Pinia, Vue Router, ESLint and Prettier
-- [x] `docker-compose.yml` with PostgreSQL
-- [x] `.gitignore`, `.editorconfig`, license
-- [x] Basic CI with GitHub Actions (build + tests for both modules)
-- [x] Issue and pull request templates
-
-### Phase 1 · Database and domain
-
-- [x] Design the data model and ER diagram in `docs/`
-- [x] Flyway migration `V1__init.sql` (users, incidents, comments, incident_history)
-- [x] JPA entities and repositories
-- [x] Enums for status, priority and role
-- [x] Seed data for development
-
-### Phase 2 · Authentication and users
-
-- [x] Registration and login with JWT
-- [x] Spring Security configuration and roles
-- [x] Users endpoint (list for assignment)
-- [x] Login view and route guards in the frontend
-- [x] HTTP interceptor with token and expired-session handling
-
-### Phase 3 · Incident management (MVP)
-
-- [x] Incident CRUD with DTOs and validation
-- [x] Paginated list with filtering and sorting
-- [x] Status change with valid transition rules
-- [x] Assignment and reassignment of owner
-- [x] Global error handling (`@ControllerAdvice`)
-- [x] Frontend: list, filters, create/edit form
-- [x] Frontend: detail view with status change and assignment
-
-### Phase 4 · Comments and history
-
-- [x] Comment endpoints
-- [x] Automatic history logging on status, priority or assignee changes
-- [x] Frontend: comment thread and history timeline
-
-### Phase 5 · Statistics
-
-- [x] Aggregate queries (by status, priority, assignee, period)
-- [x] Mean time to resolution calculation
-- [x] Frontend: dashboard with charts (Chart.js or ECharts)
-
-### Phase 6 · Quality and documentation
-
-- [ ] Unit tests for services and business rules
-- [ ] Integration tests with Testcontainers
-- [ ] Component and store tests (Vitest)
-- [x] E2E tests for the main flows (Playwright)
-- [ ] Review OpenAPI documentation
-- [ ] Contribution guide (`CONTRIBUTING.md`)
-
-### Phase 7 · Future improvements (backlog)
-
-- [ ] Attachments on incidents
-- [ ] Email or webhook notifications
-- [ ] Custom labels and categories
-- [ ] SLAs and due-date alerts
-- [ ] `@user` mentions in comments
-- [ ] CSV export
-- [ ] Dark mode and internationalization (ES/EN)
-- [ ] Deployment (Docker on a VPS or PaaS)
-
----
-
-## Conventions
-
-- **Branches**: `main` (stable), `develop`, `feature/<description>`, `fix/<description>`
-- **Commits**: [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`)
-- **PRs**: one issue per PR, with tests and green CI
+Contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) first: it explains the workflow (one branch and one pull request per task, Conventional Commits), the checks that must pass and the project conventions.
 
 ## License
 
