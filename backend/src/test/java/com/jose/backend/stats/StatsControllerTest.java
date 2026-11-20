@@ -1,8 +1,5 @@
 package com.jose.backend.stats;
 
-import com.jose.backend.support.AbstractIntegrationTest;
-
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -10,22 +7,23 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.jayway.jsonpath.JsonPath;
+import com.jose.backend.support.AbstractIntegrationTest;
+import com.jose.backend.user.Role;
+import com.jose.backend.user.User;
+import com.jose.backend.user.UserRepository;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
-
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
-
-import com.jayway.jsonpath.JsonPath;
-import com.jose.backend.user.Role;
-import com.jose.backend.user.User;
-import com.jose.backend.user.UserRepository;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -37,6 +35,14 @@ class StatsControllerTest extends AbstractIntegrationTest {
     @Autowired MockMvc mockMvc;
     @Autowired UserRepository users;
     @Autowired PasswordEncoder passwordEncoder;
+    @Autowired JdbcTemplate jdbc;
+
+    // The test states its starting point instead of trusting the others to clean up.
+    // It runs in the test transaction, so it is rolled back like everything else.
+    @BeforeEach
+    void startWithoutIncidents() {
+        jdbc.update("DELETE FROM incidents");
+    }
 
     private User createUser(String email, Role role) {
         User user = new User();
@@ -72,24 +78,35 @@ class StatsControllerTest extends AbstractIntegrationTest {
         return JsonPath.<Number>read(response, "$.id").longValue();
     }
 
-    private void changeStatus(String token, long id, String status) throws Exception {
+    private void changeStatus(String token, long id, String newStatus) throws Exception {
         mockMvc.perform(patch("/api/incidents/" + id + "/status")
                         .header("Authorization", token)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"status\":\"" + status + "\"}"))
+                        .content("{\"status\":\"" + newStatus + "\"}"))
                 .andExpect(status().isOk());
     }
 
-    private String body(String path, String token) throws Exception {
-        return mockMvc.perform(get(path).header("Authorization", token))
-                .andExpect(status().isOk())
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
+    private void resolve(String token, long id) throws Exception {
+        changeStatus(token, id, "IN_PROGRESS");
+        changeStatus(token, id, "IN_REVIEW");
+        changeStatus(token, id, "RESOLVED");
     }
 
-    private static long number(String json, String path) {
-        return JsonPath.<Number>read(json, path).longValue();
+    private void assign(String token, long id, long assigneeId) throws Exception {
+        mockMvc.perform(patch("/api/incidents/" + id + "/assignee")
+                        .header("Authorization", token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"assigneeId\":" + assigneeId + "}"))
+                .andExpect(status().isOk());
+    }
+
+    private void setPriority(String token, long id, String priority) throws Exception {
+        mockMvc.perform(put("/api/incidents/" + id)
+                        .header("Authorization", token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\":\"Stats test\",\"description\":\"Something is broken\","
+                                + "\"priority\":\"" + priority + "\"}"))
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -104,71 +121,94 @@ class StatsControllerTest extends AbstractIntegrationTest {
     }
 
     @Test
+    void withoutIncidentsEverythingIsZeroAndEmpty() throws Exception {
+        createUser("agent.empty@example.com", Role.AGENT);
+        String agent = tokenFor("agent.empty@example.com");
+
+        mockMvc.perform(get("/api/stats/summary").header("Authorization", agent))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.total").value(0))
+                .andExpect(jsonPath("$.active").value(0))
+                .andExpect(jsonPath("$.unassigned").value(0))
+                .andExpect(jsonPath("$.byStatus.OPEN").value(0))
+                .andExpect(jsonPath("$.byStatus.IN_PROGRESS").value(0))
+                .andExpect(jsonPath("$.byStatus.IN_REVIEW").value(0))
+                .andExpect(jsonPath("$.byStatus.RESOLVED").value(0))
+                .andExpect(jsonPath("$.byStatus.CLOSED").value(0))
+                .andExpect(jsonPath("$.byPriority.LOW").value(0))
+                .andExpect(jsonPath("$.byPriority.MEDIUM").value(0))
+                .andExpect(jsonPath("$.byPriority.HIGH").value(0))
+                .andExpect(jsonPath("$.byPriority.CRITICAL").value(0))
+                .andExpect(jsonPath("$.byAssignee").isEmpty());
+
+        mockMvc.perform(get("/api/stats/resolution-time").header("Authorization", agent))
+                .andExpect(jsonPath("$.resolvedCount").value(0))
+                .andExpect(jsonPath("$.averageHours").doesNotExist())
+                .andExpect(jsonPath("$.byPriority").isEmpty());
+    }
+
+    @Test
     void summaryCountsByStatusPriorityAndAssignee() throws Exception {
         User agentUser = createUser("agent.stats@example.com", Role.AGENT);
         createUser("owner.stats@example.com", Role.USER);
         String agent = tokenFor("agent.stats@example.com");
         String owner = tokenFor("owner.stats@example.com");
 
-        String before = body("/api/stats/summary", agent);
+        long inProgress = createIncident(owner); // active, assigned, HIGH
+        createIncident(owner); // active, unassigned, MEDIUM, stays OPEN
+        long resolved = createIncident(owner); // RESOLVED
+        long closed = createIncident(owner); // CLOSED
 
-        long first = createIncident(owner);
-        long second = createIncident(owner);
-        changeStatus(agent, first, "IN_PROGRESS");
-        mockMvc.perform(patch("/api/incidents/" + first + "/assignee")
-                        .header("Authorization", agent)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"assigneeId\":" + agentUser.getId() + "}"))
-                .andExpect(status().isOk());
-        mockMvc.perform(put("/api/incidents/" + second)
-                        .header("Authorization", agent)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"title\":\"Stats test\",\"description\":\"Something is broken\","
-                                + "\"priority\":\"HIGH\"}"))
-                .andExpect(status().isOk());
+        changeStatus(agent, inProgress, "IN_PROGRESS");
+        assign(agent, inProgress, agentUser.getId());
+        setPriority(agent, inProgress, "HIGH");
 
-        String after = body("/api/stats/summary", agent);
+        resolve(agent, resolved);
 
-        assertThat(number(after, "$.total")).isEqualTo(number(before, "$.total") + 2);
-        assertThat(number(after, "$.active")).isEqualTo(number(before, "$.active") + 2);
-        assertThat(number(after, "$.unassigned")).isEqualTo(number(before, "$.unassigned") + 1);
-        assertThat(number(after, "$.byStatus.OPEN")).isEqualTo(number(before, "$.byStatus.OPEN") + 1);
-        assertThat(number(after, "$.byStatus.IN_PROGRESS"))
-                .isEqualTo(number(before, "$.byStatus.IN_PROGRESS") + 1);
-        assertThat(number(after, "$.byPriority.HIGH")).isEqualTo(number(before, "$.byPriority.HIGH") + 1);
-        assertThat(number(after, "$.byPriority.MEDIUM"))
-                .isEqualTo(number(before, "$.byPriority.MEDIUM") + 1);
+        resolve(agent, closed);
+        changeStatus(agent, closed, "CLOSED");
 
         mockMvc.perform(get("/api/stats/summary").header("Authorization", agent))
-                .andExpect(jsonPath("$.byAssignee[?(@.user.name=='agent.stats')].active").value(1));
-    }
-
-    @Test
-    void everyStatusAndPriorityIsPresentEvenWithoutIncidents() throws Exception {
-        createUser("agent.zeros@example.com", Role.AGENT);
-
-        mockMvc.perform(get("/api/stats/summary").header("Authorization", tokenFor("agent.zeros@example.com")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.byStatus.OPEN").isNumber())
-                .andExpect(jsonPath("$.byStatus.CLOSED").isNumber())
-                .andExpect(jsonPath("$.byPriority.LOW").isNumber())
-                .andExpect(jsonPath("$.byPriority.CRITICAL").isNumber());
+                .andExpect(jsonPath("$.total").value(4))
+                .andExpect(jsonPath("$.active").value(2))
+                .andExpect(jsonPath("$.unassigned").value(1))
+                .andExpect(jsonPath("$.byStatus.OPEN").value(1))
+                .andExpect(jsonPath("$.byStatus.IN_PROGRESS").value(1))
+                .andExpect(jsonPath("$.byStatus.IN_REVIEW").value(0))
+                .andExpect(jsonPath("$.byStatus.RESOLVED").value(1))
+                .andExpect(jsonPath("$.byStatus.CLOSED").value(1))
+                .andExpect(jsonPath("$.byPriority.LOW").value(0))
+                .andExpect(jsonPath("$.byPriority.MEDIUM").value(3))
+                .andExpect(jsonPath("$.byPriority.HIGH").value(1))
+                .andExpect(jsonPath("$.byPriority.CRITICAL").value(0))
+                .andExpect(jsonPath("$.byAssignee.length()").value(1))
+                .andExpect(jsonPath("$.byAssignee[0].user.name").value("agent.stats"))
+                .andExpect(jsonPath("$.byAssignee[0].active").value(1));
     }
 
     @Test
-    void trendReturnsOnePointPerDayEndingToday() throws Exception {
+    void trendHasOnePointPerDayAndCountsToday() throws Exception {
         createUser("agent.trend@example.com", Role.AGENT);
         String agent = tokenFor("agent.trend@example.com");
 
-        String before = body("/api/stats/trend?days=7", agent);
-        createIncident(agent);
-        createIncident(agent);
-        String after = body("/api/stats/trend?days=7", agent);
+        // Days are UTC: this would only be wrong if the test ran across midnight UTC
+        LocalDate today = LocalDate.now(ZoneOffset.UTC);
 
-        assertThat(JsonPath.<Integer>read(after, "$.points.length()")).isEqualTo(7);
-        assertThat(JsonPath.<String>read(after, "$.points[6].date"))
-                .isEqualTo(LocalDate.now(ZoneOffset.UTC).toString());
-        assertThat(number(after, "$.points[6].created")).isEqualTo(number(before, "$.points[6].created") + 2);
+        long first = createIncident(agent);
+        createIncident(agent);
+        resolve(agent, first);
+
+        mockMvc.perform(get("/api/stats/trend?days=7").header("Authorization", agent))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.days").value(7))
+                .andExpect(jsonPath("$.points.length()").value(7))
+                .andExpect(jsonPath("$.points[0].date").value(today.minusDays(6).toString()))
+                .andExpect(jsonPath("$.points[6].date").value(today.toString()))
+                .andExpect(jsonPath("$.points[6].created").value(2))
+                .andExpect(jsonPath("$.points[6].resolved").value(1))
+                .andExpect(jsonPath("$.points[0].created").value(0))
+                .andExpect(jsonPath("$.points[0].resolved").value(0));
     }
 
     @Test
@@ -185,22 +225,44 @@ class StatsControllerTest extends AbstractIntegrationTest {
     }
 
     @Test
-    void resolutionTimeIncludesResolvedIncidents() throws Exception {
+    void resolutionTimeIsAveragedOverallAndByPriority() throws Exception {
         createUser("agent.resolution@example.com", Role.AGENT);
         String agent = tokenFor("agent.resolution@example.com");
 
-        String before = body("/api/stats/resolution-time?days=30", agent);
+        long medium = createIncident(agent);
+        long high = createIncident(agent);
+        setPriority(agent, high, "HIGH");
 
-        long id = createIncident(agent);
-        changeStatus(agent, id, "IN_PROGRESS");
-        changeStatus(agent, id, "IN_REVIEW");
-        changeStatus(agent, id, "RESOLVED");
+        // Known durations: move the creation date back, then resolve
+        jdbc.update("UPDATE incidents SET created_at = now() - interval '4 hours' WHERE id = ?", medium);
+        jdbc.update("UPDATE incidents SET created_at = now() - interval '8 hours' WHERE id = ?", high);
+        resolve(agent, medium);
+        resolve(agent, high);
 
-        String after = body("/api/stats/resolution-time?days=30", agent);
-
-        assertThat(number(after, "$.resolvedCount")).isEqualTo(number(before, "$.resolvedCount") + 1);
-        assertThat(JsonPath.<Number>read(after, "$.averageHours").doubleValue()).isGreaterThanOrEqualTo(0);
         mockMvc.perform(get("/api/stats/resolution-time?days=30").header("Authorization", agent))
-                .andExpect(jsonPath("$.byPriority[?(@.priority=='MEDIUM')]").exists());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resolvedCount").value(2))
+                .andExpect(jsonPath("$.averageHours").value(6.0))
+                .andExpect(jsonPath("$.byPriority.length()").value(2))
+                .andExpect(jsonPath("$.byPriority[?(@.priority=='MEDIUM')].averageHours").value(4.0))
+                .andExpect(jsonPath("$.byPriority[?(@.priority=='MEDIUM')].resolvedCount").value(1))
+                .andExpect(jsonPath("$.byPriority[?(@.priority=='HIGH')].averageHours").value(8.0))
+                .andExpect(jsonPath("$.byPriority[?(@.priority=='HIGH')].resolvedCount").value(1));
+    }
+
+    @Test
+    void incidentsResolvedBeforeThePeriodAreLeftOut() throws Exception {
+        createUser("agent.period@example.com", Role.AGENT);
+        String agent = tokenFor("agent.period@example.com");
+
+        long old = createIncident(agent);
+        resolve(agent, old);
+        jdbc.update("UPDATE incidents SET resolved_at = now() - interval '40 days' WHERE id = ?", old);
+
+        mockMvc.perform(get("/api/stats/resolution-time?days=30").header("Authorization", agent))
+                .andExpect(jsonPath("$.resolvedCount").value(0))
+                .andExpect(jsonPath("$.averageHours").doesNotExist());
+        mockMvc.perform(get("/api/stats/resolution-time?days=90").header("Authorization", agent))
+                .andExpect(jsonPath("$.resolvedCount").value(1));
     }
 }
