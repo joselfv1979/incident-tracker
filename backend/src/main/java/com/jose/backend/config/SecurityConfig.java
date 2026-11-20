@@ -43,7 +43,10 @@ public class SecurityConfig {
                                 "/api/auth/login",
                                 "/api/auth/register",
                                 "/api/auth/verify-email",
-                                "/api/auth/resend-verification")
+                                "/api/auth/resend-verification",
+                                "/v3/api-docs/**",
+                                "/swagger-ui.html",
+                                "/swagger-ui/**")
                         .permitAll()
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2
@@ -57,9 +60,9 @@ public class SecurityConfig {
     }
 
     /**
-     * The token only proves who the user is. Authorities come from the database, so a
-     * role change or a deleted account takes effect immediately instead of when the
-     * token expires.
+     * The token only proves who the user is. Authorities come from the
+     * database, so a role change or a deleted account takes effect immediately
+     * instead of when the token expires.
      */
     @Bean
     Converter<Jwt, AbstractAuthenticationToken> jwtAuthenticationConverter(UserRepository users) {
