@@ -31,6 +31,8 @@ async function submit() {
     } else if (e instanceof ApiError && e.status === 403) {
       notVerified.value = true
       error.value = 'Your email address is not verified yet'
+    } else if (e instanceof ApiError && e.status === 429) {
+      error.value = 'Too many attempts. Please wait a few minutes and try again'
     } else {
       error.value = 'Something went wrong. Please try again'
     }
@@ -42,8 +44,11 @@ async function submit() {
 async function resend() {
   try {
     info.value = (await resendVerification(email.value)).message
-  } catch {
-    error.value = 'Could not send the email. Try again later'
+  } catch (e) {
+    error.value =
+      e instanceof ApiError && e.status === 429
+        ? 'Too many requests. Please wait a while before asking for another email'
+        : 'Could not send the email. Try again later'
   }
 }
 </script>

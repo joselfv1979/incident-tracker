@@ -1,6 +1,7 @@
 package com.jose.backend.auth;
 
 import com.jose.backend.config.JwtProperties;
+import com.jose.backend.ratelimit.FailedLoginLimiter;
 import com.jose.backend.user.User;
 import com.jose.backend.user.UserRepository;
 import java.time.Instant;
@@ -20,6 +21,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtEncoder jwtEncoder;
     private final JwtProperties jwtProperties;
+    private final FailedLoginLimiter failedLogins;
     // Compared against when the email does not exist, so both failures take similar time
     private final String dummyHash;
 
@@ -27,27 +29,35 @@ public class AuthService {
             UserRepository users,
             PasswordEncoder passwordEncoder,
             JwtEncoder jwtEncoder,
-            JwtProperties jwtProperties) {
+            JwtProperties jwtProperties,
+            FailedLoginLimiter failedLogins) {
         this.users = users;
         this.passwordEncoder = passwordEncoder;
         this.jwtEncoder = jwtEncoder;
         this.jwtProperties = jwtProperties;
+        this.failedLogins = failedLogins;
         this.dummyHash = passwordEncoder.encode("dummy-password");
     }
 
     public LoginResponse login(LoginRequest request) {
         String email = request.email().trim().toLowerCase(Locale.ROOT);
+
+        // A locked account is refused even with the right password
+        failedLogins.checkAllowed(email);
+
         User user = users.findByEmail(email).orElse(null);
 
         String hash = user != null ? user.getPasswordHash() : dummyHash;
         boolean matches = passwordEncoder.matches(request.password(), hash);
         if (user == null || !matches) {
+            // Unknown emails are counted too, so the response never reveals which ones exist
+            failedLogins.recordFailure(email);
             throw new InvalidCredentialsException();
         }
-
         if (!user.isEmailVerified()) {
             throw new EmailNotVerifiedException();
         }
+        failedLogins.reset(email);
 
         Instant now = Instant.now();
         JwtClaimsSet claims = JwtClaimsSet.builder()

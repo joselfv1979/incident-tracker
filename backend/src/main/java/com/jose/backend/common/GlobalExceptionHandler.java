@@ -6,11 +6,14 @@ import com.jose.backend.auth.InvalidVerificationTokenException;
 import com.jose.backend.comment.CommentNotFoundException;
 import com.jose.backend.incident.IncidentNotFoundException;
 import com.jose.backend.incident.InvalidStatusTransitionException;
+import com.jose.backend.ratelimit.TooManyRequestsException;
 import com.jose.backend.user.OperationNotAllowedException;
 import com.jose.backend.user.UserNotFoundException;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -55,5 +58,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(CommentNotFoundException.class)
     ProblemDetail handleCommentNotFound(CommentNotFoundException e) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, e.getMessage());
+    }
+
+    @ExceptionHandler(TooManyRequestsException.class)
+    ResponseEntity<ProblemDetail> handleTooManyRequests(TooManyRequestsException e) {
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .header(HttpHeaders.RETRY_AFTER, String.valueOf(e.getRetryAfterSeconds()))
+                .body(ProblemDetail.forStatusAndDetail(HttpStatus.TOO_MANY_REQUESTS, e.getMessage()));
     }
 }

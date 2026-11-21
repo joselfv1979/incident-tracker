@@ -31,6 +31,9 @@ public class RegistrationController {
             + "the same whether or not the email already has an account.")
     @SecurityRequirements
     @ResponseStatus(HttpStatus.ACCEPTED)
+    @ApiResponse(
+        responseCode = "429",
+        description = "Too many requests. The Retry-After header says how many seconds to wait")
     public MessageResponse register(@Valid @RequestBody RegisterRequest request) {
         registrationService.register(request);
         return new MessageResponse("If the data is valid, a verification email has been sent");
@@ -40,6 +43,9 @@ public class RegistrationController {
     @Operation(summary = "Verify an email address with the token sent by email")
     @SecurityRequirements
     @ApiResponse(responseCode = "400", description = "The token is invalid or has expired")
+    @ApiResponse(
+        responseCode = "429",
+        description = "Too many requests. The Retry-After header says how many seconds to wait")
     public MessageResponse verifyEmail(@Valid @RequestBody VerifyEmailRequest request) {
         registrationService.verify(request.token());
         return new MessageResponse("Email verified");
@@ -52,6 +58,9 @@ public class RegistrationController {
             description = "At most one email per user every 60 seconds. The response never "
             + "reveals whether the account exists.")
     @SecurityRequirements
+    @ApiResponse(
+        responseCode = "429",
+        description = "Too many requests. The Retry-After header says how many seconds to wait")
     public MessageResponse resend(@Valid @RequestBody ResendVerificationRequest request) {
         registrationService.resend(request.email());
         return new MessageResponse("If the account exists and is not verified, a new email has been sent");
