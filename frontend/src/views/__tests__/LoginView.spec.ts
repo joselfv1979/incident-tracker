@@ -81,4 +81,13 @@ describe('LoginView', () => {
 
     expect(router.currentRoute.value.fullPath).toBe('/issues')
   })
+
+  it('asks the user to wait when there are too many attempts', async () => {
+    vi.mocked(authApi.login).mockRejectedValue(new ApiError(429, 'Too many requests'))
+    const { wrapper } = await mountLogin()
+
+    await fillAndSubmit(wrapper)
+
+    expect(wrapper.text()).toContain('Too many attempts')
+  })
 })

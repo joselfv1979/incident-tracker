@@ -147,6 +147,8 @@ Every dependency is code you must trust, so add them sparingly.
 - **Never commit secrets**: passwords, tokens, keys or `.env` files. Test and CI values must be obviously throwaway.
 - If you find a vulnerability, do **not** open a public issue. Report it privately through the repository's *Security* tab (*Report a vulnerability*).
 - Think about abuse when you add an endpoint that is public: who can call it, how often, and what it reveals.
+- A new public endpoint that can be abused (it creates data, sends email or checks
+  credentials) must be covered by the rate limiter. See `RateLimitConfig`.
 
 ## Documentation
 

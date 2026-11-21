@@ -465,11 +465,11 @@ For each stage: what you practice, and a question to check that you can explain 
 - [x] **`feat/openapi-docs`**: interactive API documentation with springdoc (Swagger UI), descriptions and the bearer authentication scheme.
 - [x] **`test/e2e-playwright`**: end-to-end tests of registration and verification, login, creating and resolving an incident, and the statistics page, plus a CI job.
 - [x] **`docs/contributing`**: `CONTRIBUTING.md`, and a README review: the roadmap checkboxes, and the setup section, which still mentions running the whole stack with Docker Compose although the compose file only starts PostgreSQL and Mailpit.
-- [ ] Simplify the statistics tests to assert exact totals now that they start from an empty database.
+- [x] Simplify the statistics tests to assert exact totals now that they start from an empty database.
 
 ### Before opening the demo to the public
 
-- [ ] **Rate limiting** on registration, login and resend verification.
+- [x] **Rate limiting** on registration, login and resend verification.
 - [ ] **Production configuration**: a real SMTP provider, `APP_BASE_URL`, a random `JWT_SECRET`, a strong administrator password and secrets kept out of the repository.
 - [ ] **Reverse proxy or CORS** for the production domains, and HTTPS.
 - [ ] **Dockerfiles** for the backend and the frontend, and a deployment target.

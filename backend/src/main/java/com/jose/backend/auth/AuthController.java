@@ -42,6 +42,9 @@ public class AuthController {
     @SecurityRequirements
     @ApiResponse(responseCode = "401", description = "Wrong email or password")
     @ApiResponse(responseCode = "403", description = "The email address is not verified yet")
+    @ApiResponse(
+        responseCode = "429",
+        description = "Too many requests. The Retry-After header says how many seconds to wait")
     public LoginResponse login(@Valid @RequestBody LoginRequest request) {
         return authService.login(request);
     }

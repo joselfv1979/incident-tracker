@@ -94,6 +94,34 @@ The backend reads its configuration from environment variables. `.env.example` l
 
 The values in `.env.example` are for local development. **Any public deployment must use its own random `JWT_SECRET`, a strong administrator password and a real SMTP server.**
 
+## Rate limiting
+
+Registration, login, resending the verification email and verifying an email are
+rate limited per client address, and failed logins are limited per account:
+
+| What | Limit |
+|------|-------|
+| Login, per address | 20 per 5 minutes |
+| Failed logins, per account | 10 per 15 minutes (the account is locked for that time) |
+| Registration, per address | 5 per hour |
+| Resend verification, per address | 5 per hour |
+| Verify email, per address | 20 per hour |
+
+Refused requests get `429 Too Many Requests` with a `Retry-After` header. The limits
+are in `application.properties` (`app.rate-limit.*`) and can be turned off with
+`RATE_LIMIT_ENABLED=false`, which is handy for local experiments.
+
+The counters live in memory: they reset when the application restarts and are not
+shared between instances. With several instances, move the limit to a shared store
+or to the reverse proxy.
+
+**Behind a reverse proxy**, every request arrives from the proxy's address unless
+Spring is told to trust the forwarding headers, and then the limit would apply to
+all users together. Set `SERVER_FORWARD_HEADERS_STRATEGY=native`, make sure the
+proxy overwrites `X-Forwarded-For` (never appends to what the client sent) and that
+the application is only reachable through the proxy. Otherwise a client could
+invent the header and bypass the limit.
+
 ## Project structure
 
 ```

@@ -23,10 +23,13 @@ async function submit() {
     await register(name.value, email.value, password.value)
     done.value = true
   } catch (e) {
-    error.value =
-      e instanceof ApiError && e.status === 400
-        ? 'Check the data: the password must have between 8 and 72 characters'
-        : 'Something went wrong. Please try again'
+    if (e instanceof ApiError && e.status === 400) {
+      error.value = 'Check the data: the password must have between 8 and 72 characters'
+    } else if (e instanceof ApiError && e.status === 429) {
+      error.value = 'Too many attempts. Please wait a while and try again'
+    } else {
+      error.value = 'Something went wrong. Please try again'
+    }
   } finally {
     loading.value = false
   }
