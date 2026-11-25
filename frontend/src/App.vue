@@ -3,7 +3,7 @@ import { ref, watch } from 'vue'
 import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
 import HealthStatus from '@/components/HealthStatus.vue'
 import { useAuthStore } from '@/stores/auth'
-import { isStaff } from '@/utils/incidents'
+import { isStaff, isAdmin } from '@/utils/incidents'
 
 const auth = useAuthStore()
 const route = useRoute()
@@ -37,6 +37,7 @@ async function retry() {
     <nav v-if="auth.isAuthenticated" class="main-nav" aria-label="Main">
       <RouterLink :to="{ name: 'incidents' }">Incidents</RouterLink>
       <RouterLink v-if="isStaff(auth.user)" :to="{ name: 'stats' }">Statistics</RouterLink>
+      <RouterLink v-if="isAdmin(auth.user)" :to="{ name: 'admin-users' }">Users</RouterLink>
     </nav>
     <div v-if="auth.isAuthenticated">
       <span v-if="auth.user">{{ auth.user.name }} ({{ auth.user.role }})</span>

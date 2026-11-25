@@ -354,3 +354,11 @@ td {
   background: #fff3cd;
   border-bottom: 1px solid #e0c36a;
 }
+
+.confirm-box {
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid #e0c36a;
+  border-radius: 6px;
+  background: #fff3cd;
+}

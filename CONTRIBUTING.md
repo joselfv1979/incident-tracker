@@ -114,6 +114,9 @@ What to test:
 
 A green build does not prove that something is visible on screen. Open the application and try your change.
 
+The end-to-end environment turns rate limiting off (`RATE_LIMIT_ENABLED=false`),
+because the tests register and log in many users from a single address.
+
 ## Database changes
 
 The schema is managed by Flyway, in `backend/src/main/resources/db/migration/`.
