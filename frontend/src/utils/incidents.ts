@@ -1,4 +1,4 @@
-import type { AuthUser } from '@/api/auth'
+import type { AuthUser, Role } from '@/api/auth'
 import type { Incident, IncidentPriority, IncidentStatus } from '@/api/incidents'
 
 export const STATUS_LABELS: Record<IncidentStatus, string> = {
@@ -29,6 +29,14 @@ const TRANSITIONS: Record<IncidentStatus, IncidentStatus[]> = {
   CLOSED: ['OPEN'],
 }
 
+export const ROLE_LABELS: Record<Role, string> = {
+  USER: 'User',
+  AGENT: 'Agent',
+  ADMIN: 'Administrator',
+}
+
+export const ROLES = Object.keys(ROLE_LABELS) as Role[]
+
 export function isStaff(user: AuthUser | null): boolean {
   return user?.role === 'AGENT' || user?.role === 'ADMIN'
 }
@@ -47,4 +55,8 @@ export function formatDate(value: string): string {
   return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(
     new Date(value),
   )
+}
+
+export function isAdmin(user: AuthUser | null): boolean {
+  return user?.role === 'ADMIN'
 }

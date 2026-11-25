@@ -61,6 +61,12 @@ const router = createRouter({
       component: () => import('@/views/StatsView.vue'),
       meta: { requiresAuth: true, roles: ['AGENT', 'ADMIN'] },
     },
+    {
+      path: '/admin/users',
+      name: 'admin-users',
+      component: () => import('@/views/UserAdminView.vue'),
+      meta: { requiresAuth: true, roles: ['ADMIN'] },
+    },
     { path: '/:pathMatch(.*)*', redirect: { name: 'home' } },
   ],
 })

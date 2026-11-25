@@ -38,6 +38,7 @@ export default defineConfig({
         MAIL_PORT: "1026",
         APP_BASE_URL: FRONTEND_URL,
         API_DOCS_ENABLED: "false",
+        RATE_LIMIT_ENABLED: "false",
       },
     },
     {
