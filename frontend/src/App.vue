@@ -2,8 +2,9 @@
 import { ref, watch } from 'vue'
 import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
 import HealthStatus from '@/components/HealthStatus.vue'
+import ThemeToggle from '@/components/ThemeToggle.vue'
 import { useAuthStore } from '@/stores/auth'
-import { isStaff, isAdmin } from '@/utils/incidents'
+import { ROLE_LABELS, isAdmin, isStaff } from '@/utils/incidents'
 
 const auth = useAuthStore()
 const route = useRoute()
@@ -33,15 +34,26 @@ async function retry() {
 
 <template>
   <header class="app-header">
-    <RouterLink :to="{ name: 'home' }"><strong>Incident Tracker</strong></RouterLink>
+    <RouterLink :to="{ name: 'home' }" class="brand">
+      <span class="brand-mark" aria-hidden="true" />
+      Incident Tracker
+    </RouterLink>
+
     <nav v-if="auth.isAuthenticated" class="main-nav" aria-label="Main">
       <RouterLink :to="{ name: 'incidents' }">Incidents</RouterLink>
       <RouterLink v-if="isStaff(auth.user)" :to="{ name: 'stats' }">Statistics</RouterLink>
       <RouterLink v-if="isAdmin(auth.user)" :to="{ name: 'admin-users' }">Users</RouterLink>
     </nav>
-    <div v-if="auth.isAuthenticated">
-      <span v-if="auth.user">{{ auth.user.name }} ({{ auth.user.role }})</span>
-      <button type="button" @click="auth.logout()">Log out</button>
+
+    <div class="header-actions">
+      <ThemeToggle />
+      <template v-if="auth.isAuthenticated">
+        <span v-if="auth.user" class="user-chip">
+          {{ auth.user.name }}
+          <span class="badge">{{ ROLE_LABELS[auth.user.role] }}</span>
+        </span>
+        <button type="button" @click="auth.logout()">Log out</button>
+      </template>
     </div>
   </header>
 
