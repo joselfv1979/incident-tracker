@@ -3,6 +3,10 @@ import { ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { resendVerification } from '@/api/auth'
 import { ApiError } from '@/api/http'
+import AlertMessage from '@/components/ui/AlertMessage.vue'
+import AuthLayout from '@/components/ui/AuthLayout.vue'
+import BaseButton from '@/components/ui/BaseButton.vue'
+import BaseInput from '@/components/ui/BaseInput.vue'
 import { useAuthStore } from '@/stores/auth'
 import { safeRedirect } from '@/utils/redirect'
 
@@ -54,28 +58,40 @@ async function resend() {
 </script>
 
 <template>
-  <main class="page">
-    <h1>Log in</h1>
+  <AuthLayout title="Log in" subtitle="Welcome back. Enter your details to continue.">
     <form @submit.prevent="submit">
-      <div class="field">
-        <label for="email">Email</label>
-        <input id="email" v-model="email" type="email" autocomplete="username" required />
+      <BaseInput
+        id="email"
+        v-model="email"
+        label="Email"
+        type="email"
+        autocomplete="username"
+        required
+      />
+      <BaseInput
+        id="password"
+        v-model="password"
+        label="Password"
+        type="password"
+        autocomplete="current-password"
+        required
+      />
+
+      <AlertMessage v-if="error" variant="error">{{ error }}</AlertMessage>
+      <AlertMessage v-if="info" variant="success">{{ info }}</AlertMessage>
+
+      <div class="mt-4 flex flex-col gap-2">
+        <BaseButton type="submit" variant="primary" size="lg" :loading="loading" block>
+          Log in
+        </BaseButton>
+        <BaseButton v-if="notVerified" block @click="resend">
+          Resend verification email
+        </BaseButton>
       </div>
-      <div class="field">
-        <label for="password">Password</label>
-        <input
-          id="password"
-          v-model="password"
-          type="password"
-          autocomplete="current-password"
-          required
-        />
-      </div>
-      <p v-if="error" class="error" role="alert">{{ error }}</p>
-      <p v-if="info" class="success">{{ info }}</p>
-      <button type="submit" :disabled="loading">Log in</button>
-      <button v-if="notVerified" type="button" @click="resend">Resend verification email</button>
     </form>
-    <p>No account yet? <RouterLink :to="{ name: 'register' }">Register</RouterLink></p>
-  </main>
+
+    <template #footer>
+      No account yet? <RouterLink :to="{ name: 'register' }">Register</RouterLink>
+    </template>
+  </AuthLayout>
 </template>
