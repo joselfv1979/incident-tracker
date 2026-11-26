@@ -3,6 +3,8 @@ import { onMounted, ref } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import { verifyEmail } from '@/api/auth'
 import { ApiError } from '@/api/http'
+import AlertMessage from '@/components/ui/AlertMessage.vue'
+import AuthLayout from '@/components/ui/AuthLayout.vue'
 
 const route = useRoute()
 const status = ref<'loading' | 'success' | 'error' | 'limited'>('loading')
@@ -23,21 +25,25 @@ onMounted(async () => {
 </script>
 
 <template>
-  <main class="page">
-    <h1>Email verification</h1>
-    <p v-if="status === 'loading'">Verifying…</p>
+  <AuthLayout title="Email verification">
+    <p v-if="status === 'loading'" class="text-muted" role="status">Verifying…</p>
+
     <template v-else-if="status === 'success'">
-      <p class="success">Your email has been verified. You can now log in.</p>
-      <RouterLink :to="{ name: 'login' }">Log in</RouterLink>
+      <AlertMessage variant="success">
+        Your email has been verified. You can now log in.
+      </AlertMessage>
+      <RouterLink :to="{ name: 'login' }" class="button mt-2">Log in</RouterLink>
     </template>
-    <p v-else-if="status === 'limited'" class="error" role="alert">
+
+    <AlertMessage v-else-if="status === 'limited'" variant="error">
       Too many attempts. Please wait a while and open the link again.
-    </p>
+    </AlertMessage>
+
     <template v-else>
-      <p class="error" role="alert">
+      <AlertMessage variant="error">
         The link is invalid or has expired. Log in to request a new verification email.
-      </p>
-      <RouterLink :to="{ name: 'login' }">Go to log in</RouterLink>
+      </AlertMessage>
+      <RouterLink :to="{ name: 'login' }" class="button mt-2">Go to log in</RouterLink>
     </template>
-  </main>
+  </AuthLayout>
 </template>
