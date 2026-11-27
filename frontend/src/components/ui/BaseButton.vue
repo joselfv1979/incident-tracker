@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 
 type Variant = 'primary' | 'secondary' | 'danger' | 'ghost'
-type Size = 'md' | 'lg'
+type Size = 'sm' | 'md' | 'lg'
 
 const props = withDefaults(
   defineProps<{
@@ -33,6 +33,7 @@ const variants: Record<Variant, string> = {
 }
 
 const sizes: Record<Size, string> = {
+  sm: 'px-2 py-1 text-xs',
   md: 'px-3 py-1.5 text-sm',
   lg: 'px-4 py-2.5 text-base',
 }

@@ -4,6 +4,8 @@ import { listComments, type IncidentComment } from '@/api/comments'
 import { listHistory, type HistoryEntry } from '@/api/history'
 import CommentForm from '@/components/CommentForm.vue'
 import CommentItem from '@/components/CommentItem.vue'
+import AlertMessage from '@/components/ui/AlertMessage.vue'
+import LoadingSkeleton from '@/components/ui/LoadingSkeleton.vue'
 import { formatDate } from '@/utils/incidents'
 import { buildTimeline } from '@/utils/timeline'
 
@@ -58,22 +60,35 @@ watch(() => props.version, loadHistory)
 </script>
 
 <template>
-  <section class="timeline" aria-labelledby="activity-title">
-    <h2 id="activity-title">Activity</h2>
+  <section class="mt-8" aria-labelledby="activity-title">
+    <h2 id="activity-title" class="mt-0 mb-4 text-lg">Activity</h2>
 
-    <p v-if="loading">Loading…</p>
+    <LoadingSkeleton v-if="loading" label="Loading the activity" :lines="3" />
     <template v-else>
-      <p v-if="historyError" class="error" role="alert">Could not load the change history</p>
-      <p v-if="commentsError" class="error" role="alert">Could not load the comments</p>
-      <p v-if="items.length === 0 && !historyError && !commentsError" class="muted">
+      <AlertMessage v-if="historyError" variant="error"
+        >Could not load the change history</AlertMessage
+      >
+      <AlertMessage v-if="commentsError" variant="error">Could not load the comments</AlertMessage>
+      <p v-if="items.length === 0 && !historyError && !commentsError" class="text-sm text-muted">
         No activity yet.
       </p>
 
-      <ol v-if="items.length > 0" class="timeline-list">
-        <li v-for="item in items" :key="`${item.kind}-${item.id}`" :class="`timeline-${item.kind}`">
-          <p v-if="item.kind === 'event'" class="event">
-            <strong>{{ item.actor.name }}</strong> {{ item.text }}
-            <time :datetime="item.at">{{ formatDate(item.at) }}</time>
+      <ol v-if="items.length > 0" class="m-0 mb-2 ml-2 list-none border-l-2 border-line p-0">
+        <li
+          v-for="item in items"
+          :key="`${item.kind}-${item.id}`"
+          :class="['relative pl-6', item.kind === 'event' ? 'py-1.5' : 'py-2']"
+        >
+          <span
+            :class="[
+              'absolute top-3 -left-[7px] size-3 rounded-full border-2 border-page',
+              item.kind === 'event' ? 'bg-line' : 'bg-primary',
+            ]"
+            aria-hidden="true"
+          />
+          <p v-if="item.kind === 'event'" class="m-0 text-sm text-muted">
+            <strong class="font-medium text-fg">{{ item.actor.name }}</strong> {{ item.text }}
+            <time :datetime="item.at" class="ml-1 text-xs">{{ formatDate(item.at) }}</time>
           </p>
           <CommentItem
             v-else-if="item.kind === 'comment'"
