@@ -108,4 +108,14 @@ describe('IncidentDetailView', () => {
 
     expect(wrapper.text()).toContain('Incident not found')
   })
+
+  it('lets staff pick the assignee and hides the selector from reporters', async () => {
+    vi.mocked(getAssignableUsers).mockResolvedValue([{ id: 2, name: 'Agent', role: 'AGENT' }])
+
+    const staff = await mountDetail('AGENT')
+    const reporter = await mountDetail('USER')
+
+    expect(staff.find('select#assignee').exists()).toBe(true)
+    expect(reporter.find('select#assignee').exists()).toBe(false)
+  })
 })
