@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { createComment, type IncidentComment } from '@/api/comments'
+import AlertMessage from '@/components/ui/AlertMessage.vue'
+import BaseButton from '@/components/ui/BaseButton.vue'
+import BaseTextarea from '@/components/ui/BaseTextarea.vue'
 import { useAuthStore } from '@/stores/auth'
 import { describeApiError } from '@/utils/errors'
 import { isStaff } from '@/utils/incidents'
@@ -33,14 +36,33 @@ async function submit() {
 </script>
 
 <template>
-  <form class="comment-form" @submit.prevent="submit">
-    <label for="comment-body">Add a comment</label>
-    <textarea id="comment-body" v-model="body" rows="4" maxlength="5000" required />
-    <label v-if="staff" class="checkbox">
-      <input id="comment-internal" v-model="internal" type="checkbox" />
+  <form
+    class="comment-form mt-6 rounded-xl border border-line bg-surface p-4 shadow-sm"
+    @submit.prevent="submit"
+  >
+    <BaseTextarea
+      id="comment-body"
+      v-model="body"
+      label="Add a comment"
+      :rows="4"
+      :maxlength="5000"
+      required
+    />
+
+    <label v-if="staff" class="mb-3 flex items-center gap-2 text-sm">
+      <input
+        id="comment-internal"
+        v-model="internal"
+        type="checkbox"
+        class="size-4 accent-primary"
+      />
       Internal note (hidden from the reporter)
     </label>
-    <p v-if="error" class="error" role="alert">{{ error }}</p>
-    <button type="submit" :disabled="busy || body.trim() === ''">Comment</button>
+
+    <AlertMessage v-if="error" variant="error">{{ error }}</AlertMessage>
+
+    <BaseButton type="submit" variant="primary" :loading="busy" :disabled="body.trim() === ''">
+      Comment
+    </BaseButton>
   </form>
 </template>

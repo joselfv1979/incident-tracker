@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { deleteComment, updateComment, type IncidentComment } from '@/api/comments'
+import AlertMessage from '@/components/ui/AlertMessage.vue'
+import BaseButton from '@/components/ui/BaseButton.vue'
+import UserAvatar from '@/components/ui/UserAvatar.vue'
 import { useAuthStore } from '@/stores/auth'
 import { describeApiError } from '@/utils/errors'
 import { formatDate } from '@/utils/incidents'
@@ -61,48 +64,83 @@ async function remove() {
 </script>
 
 <template>
-  <div class="comment" :class="{ internal: comment.internal }">
-    <header class="comment-header">
-      <strong>{{ comment.author.name }}</strong>
-      <span v-if="roleLabel" class="badge">{{ roleLabel }}</span>
-      <span v-if="comment.internal" class="badge badge-internal">Internal note</span>
-      <time :datetime="comment.createdAt">{{ formatDate(comment.createdAt) }}</time>
-      <span v-if="comment.editedAt" class="muted">(edited)</span>
+  <div
+    :class="[
+      'rounded-xl border px-4 py-3 shadow-sm',
+      comment.internal
+        ? 'border-dashed border-warning-line bg-warning-bg'
+        : 'border-line bg-surface',
+    ]"
+  >
+    <header class="flex flex-wrap items-center gap-x-2 gap-y-1">
+      <UserAvatar :name="comment.author.name" />
+      <strong class="text-sm">{{ comment.author.name }}</strong>
+      <span
+        v-if="roleLabel"
+        class="rounded-full bg-subtle px-2 py-0.5 text-xs font-medium text-muted"
+        >{{ roleLabel }}</span
+      >
+      <span
+        v-if="comment.internal"
+        class="rounded-full bg-amber-200 px-2 py-0.5 text-xs font-medium text-amber-950 dark:bg-amber-500/25 dark:text-amber-100"
+        >Internal note</span
+      >
+      <time :datetime="comment.createdAt" class="text-xs text-muted">{{
+        formatDate(comment.createdAt)
+      }}</time>
+      <span v-if="comment.editedAt" class="text-xs text-muted">(edited)</span>
     </header>
 
-    <form v-if="editing" @submit.prevent="save">
-      <label class="visually-hidden" :for="`edit-${comment.id}`">Edit comment</label>
+    <form v-if="editing" class="mt-2" @submit.prevent="save">
+      <label class="sr-only" :for="`edit-${comment.id}`">Edit comment</label>
       <textarea
         :id="`edit-${comment.id}`"
         v-model="draft"
-        class="edit-body"
+        class="edit-body w-full"
         rows="4"
         maxlength="5000"
         required
       />
-      <button type="submit" :disabled="busy || draft.trim() === ''">Save</button>
-      <button type="button" :disabled="busy" @click="editing = false">Cancel</button>
+      <div class="mt-2 flex gap-2">
+        <BaseButton
+          type="submit"
+          variant="primary"
+          size="sm"
+          :loading="busy"
+          :disabled="draft.trim() === ''"
+        >
+          Save
+        </BaseButton>
+        <BaseButton size="sm" :disabled="busy" @click="editing = false">Cancel</BaseButton>
+      </div>
     </form>
-    <p v-else class="comment-body">{{ comment.body }}</p>
+    <p v-else class="my-2 break-words whitespace-pre-wrap">{{ comment.body }}</p>
 
-    <div v-if="!editing && (isOwn || canDelete)" class="comment-actions">
-      <button v-if="isOwn" type="button" :disabled="busy" @click="startEditing">Edit</button>
+    <div v-if="!editing && (isOwn || canDelete)" class="flex gap-2">
+      <BaseButton v-if="isOwn" variant="ghost" size="sm" :disabled="busy" @click="startEditing">
+        Edit
+      </BaseButton>
       <template v-if="canDelete">
-        <button
+        <BaseButton
           v-if="!confirmingDelete"
-          type="button"
+          variant="ghost"
+          size="sm"
           :disabled="busy"
           @click="confirmingDelete = true"
         >
           Delete
-        </button>
+        </BaseButton>
         <template v-else>
-          <button type="button" :disabled="busy" @click="remove">Yes, delete</button>
-          <button type="button" :disabled="busy" @click="confirmingDelete = false">Cancel</button>
+          <BaseButton variant="danger" size="sm" :disabled="busy" @click="remove">
+            Yes, delete
+          </BaseButton>
+          <BaseButton size="sm" :disabled="busy" @click="confirmingDelete = false"
+            >Cancel</BaseButton
+          >
         </template>
       </template>
     </div>
 
-    <p v-if="error" class="error" role="alert">{{ error }}</p>
+    <AlertMessage v-if="error" variant="error">{{ error }}</AlertMessage>
   </div>
 </template>
