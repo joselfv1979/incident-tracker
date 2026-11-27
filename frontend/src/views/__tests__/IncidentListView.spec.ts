@@ -3,6 +3,7 @@ import { flushPromises, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import { listIncidents, type Incident } from '@/api/incidents'
+import { getAssignableUsers } from '@/api/users'
 import { useAuthStore } from '@/stores/auth'
 import IncidentListView from '@/views/IncidentListView.vue'
 
@@ -27,10 +28,10 @@ function pageOf(content: Incident[]) {
   return { content, page: 0, size: 10, totalElements: content.length, totalPages: 1 }
 }
 
-async function mountList() {
+async function mountList(role: 'USER' | 'AGENT' = 'USER', url = '/incidents') {
   const pinia = createPinia()
   setActivePinia(pinia)
-  useAuthStore().user = { id: 1, name: 'Reporter', email: 'r@example.com', role: 'USER' }
+  useAuthStore().user = { id: 1, name: 'Someone', email: 'someone@example.com', role }
 
   const router = createRouter({
     history: createMemoryHistory(),
@@ -40,7 +41,7 @@ async function mountList() {
       { path: '/incidents/:id', name: 'incident-detail', component: { template: '<div />' } },
     ],
   })
-  await router.push('/incidents')
+  await router.push(url)
   await router.isReady()
 
   const wrapper = mount(IncidentListView, { global: { plugins: [pinia, router] } })
@@ -51,6 +52,7 @@ async function mountList() {
 describe('IncidentListView', () => {
   beforeEach(() => {
     vi.resetAllMocks()
+    vi.mocked(getAssignableUsers).mockResolvedValue([])
   })
 
   it('lists the incidents', async () => {
@@ -60,14 +62,44 @@ describe('IncidentListView', () => {
 
     expect(wrapper.text()).toContain('Printer on fire')
     expect(wrapper.text()).toContain('High')
+    expect(wrapper.text()).toContain('Showing 1–1 of 1')
   })
 
-  it('shows an empty state', async () => {
+  it('explains how to start when the user has no incidents', async () => {
     vi.mocked(listIncidents).mockResolvedValue(pageOf([]))
 
     const { wrapper } = await mountList()
 
     expect(wrapper.text()).toContain('No incidents found')
+    expect(wrapper.text()).toContain('Use the New incident button')
+  })
+
+  it('suggests clearing the filters when nothing matches them', async () => {
+    vi.mocked(listIncidents).mockResolvedValue(pageOf([]))
+
+    const { wrapper } = await mountList('USER', '/incidents?status=CLOSED')
+
+    expect(wrapper.text()).toContain('No incidents found')
+    expect(wrapper.text()).toContain('Try changing or clearing the filters')
+  })
+
+  it('shows a loading skeleton while the incidents load', async () => {
+    vi.mocked(listIncidents).mockReturnValue(new Promise(() => {}))
+
+    const { wrapper } = await mountList()
+
+    expect(wrapper.find('[aria-busy="true"]').exists()).toBe(true)
+    expect(wrapper.text()).toContain('Loading incidents')
+  })
+
+  it('shows who reported each incident to the staff only', async () => {
+    vi.mocked(listIncidents).mockResolvedValue(pageOf([incident]))
+
+    const staff = await mountList('AGENT')
+    const reporter = await mountList('USER')
+
+    expect(staff.wrapper.text()).toContain('Reporter')
+    expect(reporter.wrapper.text()).not.toContain('Reporter')
   })
 
   it('shows an error when the incidents cannot be loaded', async () => {
@@ -76,21 +108,6 @@ describe('IncidentListView', () => {
     const { wrapper } = await mountList()
 
     expect(wrapper.text()).toContain('Could not load the incidents')
-  })
-
-  it('puts the filters in the URL and reloads', async () => {
-    vi.mocked(listIncidents).mockResolvedValue(pageOf([incident]))
-    const { wrapper, router } = await mountList()
-
-    await wrapper.find('#q').setValue('printer')
-    await wrapper.find('#status').setValue('OPEN')
-    await wrapper.find('form').trigger('submit')
-    await flushPromises()
-
-    expect(router.currentRoute.value.query).toEqual({ q: 'printer', status: 'OPEN' })
-    expect(listIncidents).toHaveBeenLastCalledWith(
-      expect.objectContaining({ q: 'printer', status: 'OPEN', page: 0 }),
-    )
   })
 
   it('lets the user retry after an error', async () => {
@@ -108,5 +125,20 @@ describe('IncidentListView', () => {
 
     expect(wrapper.text()).toContain('Printer on fire')
     expect(wrapper.text()).not.toContain('Could not load the incidents')
+  })
+
+  it('puts the filters in the URL and reloads', async () => {
+    vi.mocked(listIncidents).mockResolvedValue(pageOf([incident]))
+    const { wrapper, router } = await mountList()
+
+    await wrapper.find('#q').setValue('printer')
+    await wrapper.find('#status').setValue('OPEN')
+    await wrapper.find('form').trigger('submit')
+    await flushPromises()
+
+    expect(router.currentRoute.value.query).toEqual({ q: 'printer', status: 'OPEN' })
+    expect(listIncidents).toHaveBeenLastCalledWith(
+      expect.objectContaining({ q: 'printer', status: 'OPEN', page: 0 }),
+    )
   })
 })
