@@ -170,61 +170,15 @@
   .page {
     @apply mx-auto my-8 w-full max-w-md px-4;
   }
-  .page-wide {
-    @apply max-w-5xl;
-  }
-  .toolbar {
-    @apply flex items-center justify-between gap-4;
-  }
-
-  /* Messages */
-  .error {
-    @apply text-danger;
-  }
-  .success {
-    @apply text-success;
-  }
-  .muted {
-    @apply text-muted;
-  }
 
   /* Forms */
-  .field {
-    @apply mb-4 flex flex-col gap-1;
-  }
-  .field input,
-  .field textarea {
-    @apply w-full;
-  }
-  .field.actions {
-    @apply flex-row;
-  }
-  .filters {
-    @apply mb-6 flex flex-wrap items-end gap-3;
-  }
-  .filters .field {
-    @apply mb-0;
-  }
-
-  .checkbox input {
-    @apply w-auto;
-  }
-  .confirm-box {
-    @apply mb-4 rounded-lg border border-warning-line bg-warning-bg px-4 py-3;
-  }
 
   /* A link that looks like a button */
   .button {
     @apply inline-flex items-center justify-center rounded-md border border-transparent bg-primary px-3 py-1.5 text-sm font-medium text-on-primary no-underline shadow-sm transition-colors hover:bg-primary-hover hover:no-underline;
   }
 
-  /* Tables, details and pagination */
-  .table-wrapper {
-    @apply overflow-x-auto rounded-lg border border-line bg-surface;
-  }
-  .table-wrapper tr:last-child td {
-    @apply border-b-0;
-  }
+  /* Details */
   .details {
     @apply grid gap-x-4 gap-y-1;
     grid-template-columns: max-content 1fr;
@@ -238,49 +192,12 @@
   .description {
     @apply whitespace-pre-wrap;
   }
-  .pagination {
-    @apply flex items-center gap-4;
-  }
 
   /* Badges */
   .badge {
     @apply mr-1 inline-flex items-center rounded-full bg-subtle px-2 py-0.5 text-xs font-medium text-fg;
   }
 
-  /* Statistics */
-  .stat-cards {
-    @apply my-4 mb-6 flex flex-wrap gap-4;
-  }
-  .stat-card {
-    @apply flex min-w-44 flex-col rounded-lg border border-line bg-surface px-4 py-3 shadow-sm;
-  }
-  .stat-label,
-  .stat-hint {
-    @apply text-sm text-muted;
-  }
-  .stat-value {
-    @apply text-3xl font-semibold;
-  }
-  .stats-grid {
-    @apply grid gap-6;
-    grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
-  }
-  .bar-list {
-    @apply m-0 list-none p-0;
-  }
-  .bar-list li {
-    @apply mb-1.5 grid items-center gap-2;
-    grid-template-columns: 7rem 1fr 4.5rem;
-  }
-  .bar-track {
-    @apply h-3.5 rounded bg-subtle;
-  }
-  .bar-fill {
-    @apply block h-full rounded bg-primary;
-  }
-  .bar-value {
-    @apply text-right tabular-nums;
-  }
   .trend-svg {
     @apply h-auto w-full;
   }
@@ -299,18 +216,5 @@
     stroke: var(--c-success);
     stroke-width: 2;
     stroke-dasharray: 6 4;
-  }
-  .trend-legend {
-    @apply flex gap-6 text-sm;
-  }
-  .swatch {
-    @apply inline-block h-0 w-6 border-t-2 border-primary align-middle;
-  }
-  .swatch-resolved {
-    @apply border-dashed border-success;
-  }
-
-  .visually-hidden {
-    @apply sr-only;
   }
 }
