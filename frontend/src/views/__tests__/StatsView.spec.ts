@@ -94,4 +94,48 @@ describe('StatsView', () => {
 
     expect(wrapper.text()).toContain('No incident was resolved in this period')
   })
+
+  it('shows a loading skeleton until the data arrives', async () => {
+    vi.mocked(getSummary).mockReturnValue(new Promise(() => {}))
+    vi.mocked(getTrend).mockReturnValue(new Promise(() => {}))
+    vi.mocked(getResolutionTime).mockReturnValue(new Promise(() => {}))
+
+    const wrapper = mount(StatsView)
+    await flushPromises()
+
+    expect(wrapper.findAll('[aria-busy="true"]')).toHaveLength(2)
+    expect(wrapper.text()).toContain('Loading the overview')
+    expect(wrapper.text()).toContain('Loading the activity')
+  })
+
+  it('lets the user retry the overview', async () => {
+    vi.mocked(getSummary).mockRejectedValueOnce(new Error('boom')).mockResolvedValueOnce(summary)
+    const wrapper = mount(StatsView)
+    await flushPromises()
+    expect(wrapper.text()).toContain('Could not load the overview')
+
+    await wrapper
+      .findAll('button')
+      .find((button) => button.text() === 'Retry')
+      ?.trigger('click')
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('Total incidents')
+    expect(wrapper.text()).not.toContain('Could not load the overview')
+  })
+
+  it('lets the user retry the activity', async () => {
+    vi.mocked(getTrend).mockRejectedValueOnce(new Error('boom')).mockResolvedValueOnce(trend)
+    const wrapper = mount(StatsView)
+    await flushPromises()
+    expect(wrapper.text()).toContain('Could not load the activity')
+
+    await wrapper
+      .findAll('button')
+      .find((button) => button.text() === 'Retry')
+      ?.trigger('click')
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('Created and resolved per day')
+  })
 })

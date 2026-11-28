@@ -60,7 +60,7 @@ const totalResolved = computed(() => props.points.reduce((sum, point) => sum + p
 </script>
 
 <template>
-  <figure class="trend">
+  <figure class="m-0">
     <svg
       :viewBox="`0 0 ${WIDTH} ${HEIGHT}`"
       class="trend-svg"
@@ -95,28 +95,29 @@ const totalResolved = computed(() => props.points.reduce((sum, point) => sum + p
       </g>
     </svg>
 
-    <figcaption class="trend-legend">
-      <span
-        ><span class="swatch swatch-created" aria-hidden="true" /> Created ({{
-          totalCreated
-        }})</span
-      >
-      <span
-        ><span class="swatch swatch-resolved" aria-hidden="true" /> Resolved ({{
-          totalResolved
-        }})</span
-      >
+    <figcaption class="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-sm">
+      <span class="inline-flex items-center gap-2">
+        <span class="inline-block h-0 w-6 border-t-2 border-primary" aria-hidden="true" />
+        Created ({{ totalCreated }})
+      </span>
+      <span class="inline-flex items-center gap-2">
+        <span
+          class="inline-block h-0 w-6 border-t-2 border-dashed border-success"
+          aria-hidden="true"
+        />
+        Resolved ({{ totalResolved }})
+      </span>
     </figcaption>
 
-    <details>
+    <details class="mt-3">
       <summary>Show data table</summary>
-      <div class="table-wrapper">
+      <div class="mt-2 max-h-64 overflow-auto rounded-lg border border-line">
         <table>
           <thead>
             <tr>
-              <th>Day</th>
-              <th>Created</th>
-              <th>Resolved</th>
+              <th scope="col">Day</th>
+              <th scope="col">Created</th>
+              <th scope="col">Resolved</th>
             </tr>
           </thead>
           <tbody>

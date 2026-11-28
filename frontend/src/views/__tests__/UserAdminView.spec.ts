@@ -57,7 +57,11 @@ describe('UserAdminView', () => {
     expect(wrapper.text()).toContain('ana@example.com')
     expect(roleSelect(wrapper, 'Ana').element.value).toBe('USER')
     expect(roleSelect(wrapper, 'Admin').element.value).toBe('ADMIN')
-    expect(wrapper.findAll('tbody tr')[1]!.text()).toContain('No')
+
+    const rows = wrapper.findAll('tbody tr')
+    expect(rows[0]!.text()).toContain('Verified')
+    expect(rows[0]!.text()).not.toContain('Not verified')
+    expect(rows[1]!.text()).toContain('Not verified')
   })
 
   it('does not let an administrator change their own role', async () => {
@@ -125,5 +129,22 @@ describe('UserAdminView', () => {
     await flushPromises()
 
     expect(wrapper.text()).toContain('ana@example.com')
+  })
+
+  it('marks the row of the current user', async () => {
+    const wrapper = await mountView()
+
+    const rows = wrapper.findAll('tbody tr')
+    expect(rows[0]!.text()).toContain('You')
+    expect(rows[1]!.text()).not.toContain('You')
+  })
+
+  it('shows an empty state when there are no users', async () => {
+    vi.mocked(listUsers).mockResolvedValue(pageOf([]))
+
+    const wrapper = await mountView()
+
+    expect(wrapper.text()).toContain('No users found')
+    expect(wrapper.find('table').exists()).toBe(false)
   })
 })
